@@ -1,0 +1,177 @@
+#!/usr/bin/env python
+
+import curses
+import time
+
+from system_temperature import SystemTemperature
+from BrickPi import BrickPiUpdateValues, BrickPiSetup, BrickPi, PORT_A, PORT_D, BrickPiSetupSensors, PORT_C, PORT_1, \
+    TYPE_SENSOR_COLOR_FULL
+
+
+def update_window(window, power, key, temp, color):
+    window.refresh()
+    window.clear()
+    window.addstr(1, 1, "a,z - power, arrows - steering, q|esc - exit")
+    window.addstr(3, 1, "current power: " + str(power))
+    window.addstr(5, 1, "color: " + str(color))
+
+
+
+def increase_power(power, power_step):
+    power = power + power_step
+    if power > 250:
+        power = 250
+
+    return power
+
+
+def decrease_power(power, power_step):
+    power = power - power_step
+    if power < 0:
+        power = 0
+
+    return power
+
+
+def run_motors(brick, power_left, power_right):
+    brick.MotorSpeed[PORT_D] = power_left
+    brick.MotorSpeed[PORT_A] = power_right
+    BrickPiUpdateValues()
+
+
+def rotate_turrent(power, brick):
+    brick.MotorSpeed[PORT_C] = power
+    BrickPiUpdateValues()
+
+
+def rotate_turrent_cw(power, brick):
+    rotate_turrent(power, brick)
+
+
+def rotate_turrent_ccw(power, brick):
+    rotate_turrent(-power, brick)
+
+
+def go_right(power, brick):
+    run_motors(brick, power, power)
+
+
+def go_left(power, brick):
+    run_motors(brick, -power, -power)
+
+
+def go_backward(power, brick):
+    run_motors(brick, -power, power)
+
+
+def go_forward(power, brick):
+    run_motors(brick, power, -power)
+
+
+def setup_color_sensor(brick):
+    brick.SensorType[PORT_1] = TYPE_SENSOR_COLOR_FULL   #Set the type of sensor
+
+
+def read_color_sensor(brick):
+    col = [ None , "Black","Blue","Green","Yellow","Red","White" ]   #used for converting the color index to name
+
+    result = BrickPiUpdateValues()  # Ask BrickPi to update values for sensors/motors
+    if not result:
+        return brick.Sensor[PORT_1]     #BrickPi.Sensor[PORT] stores the value obtained from sensor
+
+    return ""
+
+
+def test_sensor():
+    brick = setup_brick()
+    setup_color_sensor(brick)
+
+    while True:
+        data = read_color_sensor(brick)
+        print(data)
+        time.sleep(1)
+
+
+def main_loop(window, brick):
+    run = True
+    power = 0
+    power_step = 50
+    key_pressed = 0
+
+    key_esc = 27
+    key_q = 113
+    key_arrow_up = 259
+    key_arrow_down = 258
+    key_arrow_left = 260
+    key_arrow_right = 261
+    key_w = ord('w')
+    key_e = ord('e')
+    key_a = ord('a')
+    key_z = ord('z')
+
+    st = SystemTemperature()
+    setup_color_sensor(brick)
+
+    while run:
+        temp = st.get_temp()
+        update_window(window, power, key_pressed, temp, read_color_sensor(brick))
+        key_pressed = window.getch()
+
+        if key_pressed == key_q or key_pressed == key_esc:
+            run = False
+
+        if key_pressed == key_a:
+            power = increase_power(power, power_step)
+
+        if key_pressed == key_z:
+            power = decrease_power(power, power_step)
+
+        if key_pressed == key_arrow_up:
+            go_forward(power, brick)
+
+        if key_pressed == key_arrow_down:
+            go_backward(power, brick)
+
+        if key_pressed == key_arrow_left:
+            go_left(power, brick)
+
+        if key_pressed == key_arrow_right:
+            go_right(power, brick)
+
+        if key_pressed == key_w:
+            rotate_turrent_cw(power, brick)
+
+        if key_pressed == key_e:
+            rotate_turrent_ccw(power, brick)
+
+
+def setup_brick():
+    BrickPiSetup()
+    BrickPi.MotorEnable[PORT_A] = 1
+    BrickPi.MotorEnable[PORT_D] = 1
+    BrickPi.MotorEnable[PORT_C] = 1
+    BrickPiSetupSensors()
+
+    return BrickPi
+
+
+def main():
+    window = curses.initscr()
+    curses.noecho()
+    curses.cbreak()
+    window.keypad(1)
+    window.border(1)
+
+    brick = setup_brick()
+
+    try:
+        main_loop(window, brick)
+    except Exception:
+        raise
+    finally:
+        curses.endwin()
+
+
+if __name__ == '__main__':
+    main()
+    # test_sensor()

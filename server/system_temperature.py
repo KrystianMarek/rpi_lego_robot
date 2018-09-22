@@ -1,4 +1,7 @@
-import thread, io, sys, traceback, time
+import sys
+import thread
+import time
+import traceback
 
 
 class SystemTemperature:

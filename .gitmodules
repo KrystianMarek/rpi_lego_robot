@@ -1,0 +1,6 @@
+[submodule "dependencies/libfreenect"]
+	path = dependencies/libfreenect
+	url = https://github.com/OpenKinect/libfreenect.git
+[submodule "dependencies/BrickPi"]
+	path = dependencies/BrickPi
+	url = https://github.com/DexterInd/BrickPi.git

@@ -1,0 +1,11 @@
+BrickPi==0.1.3
+freenect==0.0.0
+future==0.16.0
+numpy==1.15.1
+opencv-python==3.4.3.18
+pkg-resources==0.0.0
+pyserial==3.4
+RPi.GPIO==0.6.3
+RpiScratchIO==0.1.7
+scratchpy==0.1.0
+spidev==2.0
