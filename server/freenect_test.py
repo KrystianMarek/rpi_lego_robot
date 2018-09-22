@@ -18,5 +18,5 @@ def get_video():
 
 for i in range(5):
     #cv.SaveImage('depth_{:>05}.jpg'.format(i), get_depth())
-    cv2.imwrite("/home/pi/Pictures/video_{:>05}.jpg".format(i), get_video())
+    cv2.imwrite("/tmp/video_{:>05}.jpg".format(i), get_video())
 

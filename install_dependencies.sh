@@ -11,10 +11,11 @@ install_system_dependencies () {
     sudo apt-get install -y libxvidcore-dev libx264-dev
     sudo apt-get install -y libgtk2.0-dev libgtk-3-dev
     sudo apt-get install -y libatlas-base-dev gfortran
-    sudo apt-get install -y python2.7-dev
+    sudo apt-get install -y python2.7-dev libusb-1.0-0-dev
+    sudo apt-get install -y libxext-dev libpng-dev libimlib2-dev libglew-dev libxrender-dev libxrandr-dev libglm-dev
 
     # kinect
-    sudo apt-get install -y libfreenect-dev
+    sudo cp dependencies/66-kinect.rules /etc/udev/rules.d/66-kinect.rules
 }
 
 # https://www.pyimagesearch.com/2017/09/04/raspbian-stretch-install-opencv-3-python-on-your-raspberry-pi/
@@ -40,6 +41,10 @@ install_opencv () {
 
     make -j4
 
+    sudo make install
+
+    ln -s /usr/local/lib/python2.7/site-packages/cv2.so $(virtualenvwrapper_get_site_packages_dir)/cv2.so
+
     cd ${base_dir}
 }
 
@@ -62,10 +67,16 @@ main () {
     python setup.py install
 
     # Install libfreenect
-    cd ${base_dir}dependencies/libfreenect/wrappers/python
+    cd ${base_dir}dependencies/libfreenect
+    mkdir build
+    cd build
+    cmake -D BUILD_PYTHON2=ON -D BUILD_CV=ON ..
+    make -j4
+    sudo make install
+
+    cd ${base_dir}/dependencies/libfreenect/wrappers/python
     python setup.py install
     cd ${base_dir}
 }
 
-#main
-install_opencv $(realpath ./)
+main
