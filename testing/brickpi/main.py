@@ -3,9 +3,10 @@
 import curses
 import time
 
-from system_temperature import SystemTemperature
+# from system_temperature import SystemTemperature
 from BrickPi import BrickPiUpdateValues, BrickPiSetup, BrickPi, PORT_A, PORT_D, BrickPiSetupSensors, PORT_C, PORT_1, \
-    TYPE_SENSOR_COLOR_FULL
+    TYPE_SENSOR_COLOR_FULL, TYPE_SENSOR_COLOR_GREEN, TYPE_SENSOR_COLOR_RED, TYPE_SENSOR_COLOR_BLUE, PORT_3, \
+    TYPE_SENSOR_ULTRASONIC_CONT, PORT_4
 
 
 def update_window(window, power, key, temp, color):
@@ -14,7 +15,6 @@ def update_window(window, power, key, temp, color):
     window.addstr(1, 1, "a,z - power, arrows - steering, q|esc - exit")
     window.addstr(3, 1, "current power: " + str(power))
     window.addstr(5, 1, "color: " + str(color))
-
 
 
 def increase_power(power, power_step):
@@ -69,7 +69,12 @@ def go_forward(power, brick):
 
 
 def setup_color_sensor(brick):
-    brick.SensorType[PORT_1] = TYPE_SENSOR_COLOR_FULL   #Set the type of sensor
+    # brick.SensorType[PORT_1] = TYPE_SENSOR_COLOR_RED   #Set the type of sensor
+    brick.SensorType[PORT_1] = TYPE_SENSOR_COLOR_BLUE   #Set the type of sensor
+
+
+def setup_ultrasonic_sensor(brick):
+    brick.SensorType[PORT_4] = TYPE_SENSOR_ULTRASONIC_CONT
 
 
 def read_color_sensor(brick):
@@ -82,13 +87,25 @@ def read_color_sensor(brick):
     return ""
 
 
-def test_sensor():
+def test_color_sensor():
     brick = setup_brick()
     setup_color_sensor(brick)
 
     while True:
         data = read_color_sensor(brick)
         print(data)
+        time.sleep(1)
+
+
+def test_ultrasonic_sensor():
+    brick = setup_brick()
+    setup_ultrasonic_sensor(brick)
+
+    while True:
+        result = BrickPiUpdateValues()  # Ask BrickPi to update values for sensors/motors
+        if not result:
+            print(BrickPi.Sensor[PORT_4])     #BrickPi.Sensor[PORT] stores the value obtained from sensor
+        # time.sleep(.01)     # sleep for 10 ms
         time.sleep(1)
 
 
@@ -109,11 +126,11 @@ def main_loop(window, brick):
     key_a = ord('a')
     key_z = ord('z')
 
-    st = SystemTemperature()
+    # st = 0 #SystemTemperature()
     setup_color_sensor(brick)
 
     while run:
-        temp = st.get_temp()
+        temp = 0 #st.get_temp()
         update_window(window, power, key_pressed, temp, read_color_sensor(brick))
         key_pressed = window.getch()
 
@@ -139,10 +156,10 @@ def main_loop(window, brick):
             go_right(power, brick)
 
         if key_pressed == key_w:
-            rotate_turrent_cw(power, brick)
+            rotate_turrent_ccw(power, brick)
 
         if key_pressed == key_e:
-            rotate_turrent_ccw(power, brick)
+            rotate_turrent_cw(power, brick)
 
 
 def setup_brick():
@@ -173,5 +190,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
     # test_sensor()
+    test_ultrasonic_sensor()
