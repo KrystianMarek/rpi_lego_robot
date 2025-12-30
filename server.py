@@ -1,19 +1,32 @@
 #!/usr/bin/env python3
+"""
+K.O.C Robot Server
+
+Runs on Raspberry Pi with BrickPi+ and Kinect.
+Accepts commands from clients and publishes telemetry/video.
+"""
 import logging
 from queue import Queue
 
 import zmq
 
+from app.common.config import Config
 from app.common.LoggingWrapper import setup_logging
 from app.server.BrickPiWrapper import BrickPiWrapper
-from app.server.CommandSubscriber import CommandSubscriber
+from app.server.CommandReceiver import CommandReceiver
 from app.server.HelloServer import HelloServer
 from app.server.KinectProcess import KinectProcess
 
 
-def server(localhost, brick_pi_port, kinect_port, publisher_port):
+def telemetry_publisher(localhost, brick_pi_port, kinect_port, publisher_port):
+    """
+    Aggregates data from BrickPi and Kinect, publishes to clients.
+
+    This is the main loop that runs on the server.
+    """
     context = zmq.Context()
     logger = logging.getLogger(__name__)
+
     brick_pi_receiver = context.socket(zmq.PULL)
     brick_pi_receiver.connect("tcp://{}:{}".format(localhost, brick_pi_port))
 
@@ -26,6 +39,7 @@ def server(localhost, brick_pi_port, kinect_port, publisher_port):
 
     publisher = context.socket(zmq.PUB)
     publisher.bind('tcp://*:{}'.format(publisher_port))
+    logger.info("Telemetry publisher bound to :{}".format(publisher_port))
 
     while True:
         try:
@@ -34,11 +48,9 @@ def server(localhost, brick_pi_port, kinect_port, publisher_port):
             break
 
         if brick_pi_receiver in socks:
-            # logger.debug("Publishing data from BrickPi")
             publisher.send(brick_pi_receiver.recv())
 
         if kinect_receiver in socks:
-            # logger.debug("Publishing data from Kinect")
             publisher.send(kinect_receiver.recv())
 
     publisher.close()
@@ -49,25 +61,38 @@ def server(localhost, brick_pi_port, kinect_port, publisher_port):
 
 def main():
     logger = logging.getLogger(__name__)
-    localhost = "127.0.0.1"
-    hello_server_port = 5556
-    brick_pi_port = 5557
-    kinect_port = 5558
-    publisher_port = 5559
 
-    command_subscriber_port = 5560
-    command_queue = Queue(maxsize=100)
+    command_queue = Queue(maxsize=Config.COMMAND_QUEUE_SIZE)
 
-    brick_pi_wrapper = BrickPiWrapper(localhost, brick_pi_port, command_queue, 0.1)
-    kinect_process = KinectProcess(localhost, kinect_port)
-    command_subscriber = CommandSubscriber(command_queue, command_subscriber_port)
-
+    # Create components using centralized config
+    brick_pi_wrapper = BrickPiWrapper(
+        Config.LOCALHOST,
+        Config.BRICKPI_PORT,
+        command_queue,
+        Config.BRICKPI_CLOCK
+    )
+    kinect_process = KinectProcess(Config.LOCALHOST, Config.KINECT_PORT)
+    command_receiver = CommandReceiver(command_queue, Config.COMMAND_PORT)
     hello_server = HelloServer(
-        hello_server_port, brick_pi_wrapper, kinect_process=kinect_process, command_subscriber=command_subscriber)
+        Config.HELLO_PORT,
+        brick_pi_wrapper,
+        kinect_process=kinect_process
+    )
 
+    # Start command receiver immediately (no client IP needed!)
+    command_receiver.start()
+    logger.info("Command receiver started on port {}".format(Config.COMMAND_PORT))
+
+    # Start hello server (manages BrickPi/Kinect startup on first client connect)
     hello_server.start()
 
-    server(localhost, brick_pi_port, kinect_port, publisher_port)
+    # Run main telemetry publisher loop
+    telemetry_publisher(
+        Config.LOCALHOST,
+        Config.BRICKPI_PORT,
+        Config.KINECT_PORT,
+        Config.TELEMETRY_PORT
+    )
 
 
 if __name__ == '__main__':

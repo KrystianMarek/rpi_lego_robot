@@ -17,7 +17,7 @@
    <bool>true</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">QLCDNumber { 
+   <string notr="true">QLCDNumber {
 	color: red;
 	background-color: rgb(204, 219, 162);
 }</string>
@@ -437,9 +437,9 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="turrent_controls">
+        <widget class="QGroupBox" name="turret_controls">
          <property name="title">
-          <string>turrent</string>
+          <string>turret</string>
          </property>
          <widget class="QWidget" name="layoutWidget">
           <property name="geometry">
@@ -456,12 +456,12 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_7">
                <item>
-                <widget class="QLCDNumber" name="turrent_encoder_lcd"/>
+                <widget class="QLCDNumber" name="turret_encoder_lcd"/>
                </item>
                <item>
                 <widget class="QLabel" name="label_3">
                  <property name="text">
-                  <string>turrent encoder</string>
+                  <string>turret encoder</string>
                  </property>
                 </widget>
                </item>
@@ -508,7 +508,7 @@
              <item>
               <layout class="QGridLayout" name="gridLayout_2">
                <item row="0" column="0">
-                <widget class="QPushButton" name="turrent_left">
+                <widget class="QPushButton" name="turret_left">
                  <property name="minimumSize">
                   <size>
                    <width>50</width>
@@ -543,7 +543,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QPushButton" name="turrent_right">
+                <widget class="QPushButton" name="turret_right">
                  <property name="minimumSize">
                   <size>
                    <width>50</width>
@@ -595,7 +595,7 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_3">
                <item>
-                <widget class="QLCDNumber" name="turrent_speed_lcd">
+                <widget class="QLCDNumber" name="turret_speed_lcd">
                  <property name="styleSheet">
                   <string notr="true">background-color: rgb(114, 159, 207);</string>
                  </property>
@@ -605,7 +605,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QDial" name="turrent_speed">
+                <widget class="QDial" name="turret_speed">
                  <property name="maximum">
                   <number>250</number>
                  </property>
@@ -630,7 +630,7 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_11">
                <item>
-                <widget class="QLCDNumber" name="turrent_angle_lcd">
+                <widget class="QLCDNumber" name="turret_angle_lcd">
                  <property name="styleSheet">
                   <string notr="true">background-color: rgb(114, 159, 207);</string>
                  </property>
@@ -639,14 +639,14 @@
                <item>
                 <widget class="QLabel" name="label_5">
                  <property name="text">
-                  <string>turrent angle</string>
+                  <string>turret angle</string>
                  </property>
                 </widget>
                </item>
               </layout>
              </item>
              <item>
-              <widget class="QDial" name="turrent_angle">
+              <widget class="QDial" name="turret_angle">
                <property name="maximum">
                 <number>360</number>
                </property>
@@ -658,9 +658,9 @@
             </layout>
            </item>
            <item>
-            <widget class="QPushButton" name="turrent_reset">
+            <widget class="QPushButton" name="turret_reset">
              <property name="text">
-              <string>turrent reset</string>
+              <string>turret reset</string>
              </property>
             </widget>
            </item>
@@ -886,9 +886,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>turrent_speed</sender>
+   <sender>turret_speed</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>turrent_speed_lcd</receiver>
+   <receiver>turret_speed_lcd</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">

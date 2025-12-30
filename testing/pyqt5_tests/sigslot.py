@@ -30,14 +30,14 @@ class Example(QWidget):
 
         lcd = QLCDNumber(self)
         # sld = QSlider(Qt.Horizontal, self)
-        turrent = QDial(self)
+        turret = QDial(self)
 
         vbox = QVBoxLayout()
         vbox.addWidget(lcd)
-        vbox.addWidget(turrent)
+        vbox.addWidget(turret)
 
         self.setLayout(vbox)
-        turrent.valueChanged.connect(lcd.display)
+        turret.valueChanged.connect(lcd.display)
 
         self.setGeometry(300, 300, 250, 150)
         self.setWindowTitle('Signal and slot')

@@ -3,9 +3,13 @@ import zlib
 
 from app.Networking.TelemetryPacket import TelemetryPacket
 
+# Use protocol 4 for compatibility with Python 3.4+
+# (Protocol 5 requires Python 3.8+ which older Raspberry Pi images may lack)
+PICKLE_PROTOCOL = 4
+
 
 def compress(data: object):
-    p = pickle.dumps(data)
+    p = pickle.dumps(data, protocol=PICKLE_PROTOCOL)
     return zlib.compress(p)
 
 

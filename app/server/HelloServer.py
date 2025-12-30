@@ -1,3 +1,9 @@
+"""
+HelloServer - Handles client connection handshake.
+
+Manages the initial connection from clients and triggers startup of
+BrickPi and Kinect components on first client connection.
+"""
 import logging
 import time
 from threading import Thread
@@ -5,20 +11,27 @@ from threading import Thread
 import zmq
 
 from app.Networking import HelloServerPacket, get_available_interfaces, HelloClientPacket
-from app.common.Misc import compress, decompress, print_recv, print_send
+from app.common.Misc import compress, decompress
 from app.server.BrickPiWrapper import BrickPiWrapper
-from app.server.CommandSubscriber import CommandSubscriber
 from app.server.KinectProcess import KinectProcess
 
 
 class HelloServer(Thread):
+    """
+    REQ/REP server for client handshake.
+
+    Starts BrickPi and Kinect on first client connection.
+    No longer needs to track client IP (commands now flow client → robot).
+    """
+
     def __init__(
             self, port,
-            brick_pi_wrapper: BrickPiWrapper, command_subscriber: CommandSubscriber, kinect_process: KinectProcess,
+            brick_pi_wrapper: BrickPiWrapper,
+            kinect_process: KinectProcess,
             sleep_time=1):
 
         Thread.__init__(self)
-        Thread.daemon = True
+        self.daemon = True
 
         self._port = port
         self._sleep_time = sleep_time
@@ -26,12 +39,8 @@ class HelloServer(Thread):
         self._running = True
 
         self._brick_pi_wrapper = brick_pi_wrapper
-        self._command_subscriber = command_subscriber
         self._kinect_process = kinect_process
-
-    @staticmethod
-    def get_client_packet(packet: object) -> HelloClientPacket:
-        return packet
+        self._components_started = False
 
     def run(self):
         context = zmq.Context()
@@ -43,28 +52,27 @@ class HelloServer(Thread):
         while self._running:
             try:
                 response = decompress(socket.recv())
-                # self._logger.info(print_recv(response))
-                if type(response) is HelloClientPacket and response.sequence == 1:
-                    client_hello = self.get_client_packet(response)
 
-                    client_network_data = client_hello.get_network()
-                    client_default_iface = client_network_data['default']
-                    client_ip = client_network_data[client_default_iface]['addr']
+                if type(response) is HelloClientPacket:
+                    # Start hardware components on first client connection
+                    if not self._components_started:
+                        self._start_components()
+                        self._components_started = True
 
-                    if not self._brick_pi_wrapper.isAlive():
-                        self._brick_pi_wrapper.start()
-                        self._kinect_process.start()
-                        self._command_subscriber.set_client_ip(client_ip)
-                        self._command_subscriber.start()
+                    # Send response with server info
+                    sequence = response.sequence + 1
+                    request = HelloServerPacket(
+                        sequence,
+                        running=True,
+                        network=get_available_interfaces(),
+                        sleep=self._sleep_time
+                    )
+                    socket.send(compress(request))
 
-                sequence = response.sequence + 1
-                request = HelloServerPacket(
-                    sequence, running=True, network=get_available_interfaces(), sleep=self._sleep_time)
-                socket.send(compress(request))
-                # self._logger.info(print_send(request))
                 time.sleep(self._sleep_time)
+
             except KeyboardInterrupt:
-                self._logger.debug("exiting...")
+                self._logger.debug("Shutting down...")
                 self._running = False
             except Exception as e:
                 self._logger.exception(e)
@@ -72,3 +80,15 @@ class HelloServer(Thread):
 
         socket.close()
         context.term()
+
+    def _start_components(self):
+        """Start BrickPi and Kinect components."""
+        self._logger.info("First client connected, starting hardware components...")
+
+        if not self._brick_pi_wrapper.is_alive():
+            self._brick_pi_wrapper.start()
+            self._logger.info("BrickPiWrapper started")
+
+        if not self._kinect_process.is_alive():
+            self._kinect_process.start()
+            self._logger.info("KinectProcess started")

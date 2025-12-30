@@ -39,17 +39,17 @@ def run_motors(brick, power_left, power_right):
     BrickPiUpdateValues()
 
 
-def rotate_turrent(power, brick):
+def rotate_turret(power, brick):
     brick.MotorSpeed[PORT_C] = power
     BrickPiUpdateValues()
 
 
-def rotate_turrent_cw(power, brick):
-    rotate_turrent(power, brick)
+def rotate_turret_cw(power, brick):
+    rotate_turret(power, brick)
 
 
-def rotate_turrent_ccw(power, brick):
-    rotate_turrent(-power, brick)
+def rotate_turret_ccw(power, brick):
+    rotate_turret(-power, brick)
 
 
 def go_right(power, brick):
@@ -156,10 +156,10 @@ def main_loop(window, brick):
             go_right(power, brick)
 
         if key_pressed == key_w:
-            rotate_turrent_ccw(power, brick)
+            rotate_turret_ccw(power, brick)
 
         if key_pressed == key_e:
-            rotate_turrent_cw(power, brick)
+            rotate_turret_cw(power, brick)
 
 
 def setup_brick():

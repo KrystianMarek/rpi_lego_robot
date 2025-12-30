@@ -4,13 +4,14 @@ import time
 from queue import Queue
 from threading import Thread
 
+import psutil
 import smbus2
 import zmq
 from BrickPi import PORT_A, PORT_D, PORT_C, PORT_1, PORT_4, TYPE_SENSOR_LIGHT_ON, TYPE_SENSOR_ULTRASONIC_CONT, \
     BrickPiSetup, BrickPi, BrickPiSetupSensors, BrickPiUpdateValues
 
 from app.common.Misc import compress, decompress
-from app.Networking.TelemetryPacket import LegoMotor, LegoSensor, TelemetryPacket
+from app.Networking.TelemetryPacket import LegoMotor, LegoSensor, TelemetryPacket, SystemStats
 
 COMMAND_QUEUE_GRACE = 3
 
@@ -47,6 +48,12 @@ class BrickPiWrapper(Thread):
         self._brick_temp = 0
         self._brick_voltage = 0
         self._command_queue_grace = COMMAND_QUEUE_GRACE
+
+        # System stats
+        self._system_stats = SystemStats()
+        self._last_net_bytes_sent = 0
+        self._last_net_bytes_recv = 0
+        self._last_net_time = time.time()
 
     @property
     def running(self):
@@ -102,9 +109,12 @@ class BrickPiWrapper(Thread):
         BrickPi.MotorSpeed[self._turret_motor.port] = telemetry.turret_motor.speed
 
         BrickPiUpdateValues()
-        if self._sequence % 50 == 0:
+
+        # Update temp, voltage, and system stats every 10 cycles (~1 second)
+        if self._sequence % 10 == 0:
             self._brick_temp = self.read_temp()
             self._brick_voltage = self.get_voltage()
+            self._update_system_stats()
 
         self._left_motor.angle = BrickPi.Encoder[self._left_motor.port]
         self._right_motor.angle = BrickPi.Encoder[self._right_motor.port]
@@ -122,10 +132,47 @@ class BrickPiWrapper(Thread):
         output.ultrasound_sensor = self._ultrasonic_sensor
         output.temperature = self._brick_temp
         output.voltage = self._brick_voltage
+        output.system_stats = self._system_stats
 
         time.sleep(self._clock)
 
         return output
+
+    def _update_system_stats(self):
+        """Collect system stats using psutil."""
+        try:
+            # CPU usage (non-blocking, uses cached value from previous call)
+            self._system_stats.cpu_percent = psutil.cpu_percent(interval=None)
+
+            # RAM usage
+            mem = psutil.virtual_memory()
+            self._system_stats.ram_percent = mem.percent
+            self._system_stats.ram_used_mb = mem.used / (1024 * 1024)
+            self._system_stats.ram_total_mb = mem.total / (1024 * 1024)
+
+            # Network stats for wlan0
+            net_io = psutil.net_io_counters(pernic=True)
+            if 'wlan0' in net_io:
+                wlan = net_io['wlan0']
+                current_time = time.time()
+                time_delta = current_time - self._last_net_time
+
+                if time_delta > 0 and self._last_net_bytes_sent > 0:
+                    # Calculate bandwidth in Mbps
+                    bytes_sent_delta = wlan.bytes_sent - self._last_net_bytes_sent
+                    bytes_recv_delta = wlan.bytes_recv - self._last_net_bytes_recv
+                    total_bytes = bytes_sent_delta + bytes_recv_delta
+                    bandwidth_mbps = (total_bytes * 8) / (time_delta * 1000000)
+                    self._system_stats.net_bandwidth_mbps = round(bandwidth_mbps, 2)
+
+                self._last_net_bytes_sent = wlan.bytes_sent
+                self._last_net_bytes_recv = wlan.bytes_recv
+                self._last_net_time = current_time
+                self._system_stats.net_bytes_sent = wlan.bytes_sent
+                self._system_stats.net_bytes_recv = wlan.bytes_recv
+
+        except Exception as e:
+            self._logger.warning("Failed to collect system stats: {}".format(e))
 
     def read_temp(self):
         temp = 0

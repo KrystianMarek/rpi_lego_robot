@@ -1,0 +1,28 @@
+# K.O.C Robot - Python Dependencies
+#
+# Client (GUI):
+#   pip install -r requirements.txt
+#
+# Server (Raspberry Pi):
+#   Use install_dependencies.sh for full setup including native libs
+
+# Core (both client and server)
+numpy>=1.19.0
+pyzmq>=22.0.0
+PyYAML>=5.0
+
+# Networking
+netifaces>=0.10.0
+
+# Client only
+PyQt5>=5.15.0
+
+# Optional: ENV file support
+python-dotenv>=0.19.0
+
+# Server only (installed via install_dependencies.sh)
+# smbus2 - I2C communication
+# freenect - Kinect driver (built from source)
+# BrickPi - Motor controller (from git submodule)
+psutil>=5.8.0  # System monitoring (CPU, RAM, Network)
+
