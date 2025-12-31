@@ -16,6 +16,8 @@ netifaces>=0.10.0
 
 # Client only
 PyQt5>=5.15.0
+pyqtgraph>=0.12.0  # 3D point cloud visualization
+PyOpenGL>=3.1.0    # OpenGL backend for pyqtgraph
 
 # Optional: ENV file support
 python-dotenv>=0.19.0

@@ -8,6 +8,7 @@ Environment variables:
 
 See app/common/config.py for all configuration options.
 """
+import signal
 import sys
 import warnings
 
@@ -33,6 +34,21 @@ def launch_gui():
     main_window = QMainWindow()
 
     wrapper = MainWindowWrapper(app, main_window, default_robot_ip=Config.ROBOT_IP)
+
+    # Handle Ctrl+C gracefully
+    def sigint_handler(*args):
+        print("\nCtrl+C pressed, disconnecting...")
+        wrapper.cleanup()
+        app.quit()
+
+    signal.signal(signal.SIGINT, sigint_handler)
+
+    # Allow Python to handle signals (required for Ctrl+C in Qt)
+    # Timer triggers event loop to check for signals
+    from PyQt5.QtCore import QTimer
+    signal_timer = QTimer()
+    signal_timer.timeout.connect(lambda: None)  # Just keep event loop alive
+    signal_timer.start(100)
 
     main_window.show()
     sys.exit(app.exec_())

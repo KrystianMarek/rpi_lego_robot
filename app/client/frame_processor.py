@@ -200,62 +200,91 @@ class FrameProcessor:
     @staticmethod
     def depth_to_colored_pointcloud(
         depth_array: np.ndarray,
-        video_frame: np.ndarray,
+        video_frame: np.ndarray = None,
+        use_depth_coloring: bool = None,
         fx: float = None,
         fy: float = None,
         cx: float = None,
         cy: float = None
     ) -> tuple:
         """
-        Convert depth to point cloud with RGB colors from video.
+        Convert depth to point cloud with colors.
 
-        Note: This assumes depth and RGB are roughly aligned.
-        For precise alignment, camera calibration is needed.
+        By default uses depth-based coloring (blue=near, red=far) because
+        Kinect RGB and depth cameras have a physical offset (~25mm) that
+        makes direct pixel alignment inaccurate without proper calibration.
 
         Args:
             depth_array: Raw depth values
-            video_frame: RGB video frame (same resolution assumed)
+            video_frame: RGB video frame (optional, for RGB coloring attempt)
+            use_depth_coloring: True for depth gradient, False for RGB (default: Config)
             fx, fy, cx, cy: Camera intrinsics
 
         Returns:
             Tuple of (points, colors) where:
             - points: (N, 3) XYZ coordinates
-            - colors: (N, 3) RGB values (0-255)
+            - colors: (N, 4) RGBA values (0-255)
         """
         fx = fx or Config.KINECT_FX
         fy = fy or Config.KINECT_FY
         cx = cx or Config.KINECT_CX
         cy = cy or Config.KINECT_CY
 
-        height, width = depth_array.shape
+        if use_depth_coloring is None:
+            use_depth_coloring = Config.POINTCLOUD_DEPTH_COLORING
 
-        u = np.arange(width)
-        v = np.arange(height)
+        height, width = depth_array.shape
+        stride = Config.POINTCLOUD_STRIDE
+
+        # Subsample for performance
+        u = np.arange(0, width, stride)
+        v = np.arange(0, height, stride)
         u, v = np.meshgrid(u, v)
 
-        z = depth_array.astype(np.float32)
+        # Get depth values at subsampled positions
+        z = depth_array[::stride, ::stride].astype(np.float32)
+
+        # Filter invalid depth values
         valid_mask = (z > Config.DEPTH_MIN_VALID) & (z < Config.DEPTH_MAX_VALID)
 
+        # Convert to 3D coordinates
+        # X: right is positive
+        # Y: up is positive (flip from image coordinates where Y=0 is top)
+        # Z: forward (into the scene) is positive
         x = (u - cx) * z / fx
-        y = (v - cy) * z / fy
+        y = -((v - cy) * z / fy)  # Negate Y to flip from image to 3D convention
 
         points = np.stack([x, y, z], axis=-1)
         valid_points = points[valid_mask]
 
-        # Get colors for valid points
-        # Note: video_frame might have different resolution
-        if video_frame.shape[:2] == depth_array.shape:
-            colors = video_frame[valid_mask]
+        if len(valid_points) == 0:
+            return np.zeros((0, 3)), np.zeros((0, 4), dtype=np.uint8)
+
+        # Generate colors
+        if use_depth_coloring or video_frame is None:
+            # Depth-based coloring: blue (near) -> cyan -> green -> yellow -> red (far)
+            z_valid = z[valid_mask]
+            z_min, z_max = z_valid.min(), z_valid.max()
+            z_range = z_max - z_min + 1e-6
+
+            # Normalize to 0-1
+            z_normalized = (z_valid - z_min) / z_range
+
+            # Jet colormap
+            colors = np.zeros((len(valid_points), 4), dtype=np.uint8)
+            colors[:, 0] = np.clip((1.5 - np.abs(4 * z_normalized - 3)) * 255, 0, 255).astype(np.uint8)  # R
+            colors[:, 1] = np.clip((1.5 - np.abs(4 * z_normalized - 2)) * 255, 0, 255).astype(np.uint8)  # G
+            colors[:, 2] = np.clip((1.5 - np.abs(4 * z_normalized - 1)) * 255, 0, 255).astype(np.uint8)  # B
+            colors[:, 3] = 255  # Alpha
         else:
-            # Simple nearest-neighbor resampling
-            scale_y = video_frame.shape[0] / height
-            scale_x = video_frame.shape[1] / width
-            vy = (v * scale_y).astype(int)
-            vx = (u * scale_x).astype(int)
-            vy = np.clip(vy, 0, video_frame.shape[0] - 1)
-            vx = np.clip(vx, 0, video_frame.shape[1] - 1)
-            all_colors = video_frame[vy, vx]
-            colors = all_colors[valid_mask]
+            # Attempt RGB coloring (inaccurate without calibration)
+            # Subsample video frame to match
+            video_subsampled = video_frame[::stride, ::stride]
+            rgb_colors = video_subsampled[valid_mask]
+
+            colors = np.zeros((len(valid_points), 4), dtype=np.uint8)
+            colors[:, :3] = rgb_colors
+            colors[:, 3] = 255  # Alpha
 
         return valid_points, colors
 

@@ -101,6 +101,7 @@ class ConnectionManager(QObject):
             self._telemetry_client.set_robot_ip_address(robot_ip)
             self._telemetry_client.telemetry_packet_signal.connect(self._on_telemetry)
             self._telemetry_client.kinect_packet_signal.connect(self._on_kinect)
+            self._telemetry_client.connection_timeout_signal.connect(self._on_connection_timeout)
             self._telemetry_client.start()
 
             # Start command client
@@ -152,6 +153,13 @@ class ConnectionManager(QObject):
     def _on_kinect(self, packet):
         """Forward kinect packet."""
         self.kinect_received.emit(packet)
+
+    def _on_connection_timeout(self):
+        """Handle connection timeout from telemetry client."""
+        if self._state == ConnectionState.CONNECTED:
+            self._logger.warning("Connection timeout detected")
+            self._set_state(ConnectionState.ERROR)
+            self.error_occurred.emit("Connection timeout - robot may be offline")
 
     def send_command(self, command):
         """

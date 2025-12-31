@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QMainWindow, QDialog
 from app.client.connection_manager import ConnectionManager, ConnectionState
 from app.client.frame_processor import FrameProcessor
 from app.client.HelloClient import HelloClient
+from app.client.pointcloud_widget import PointCloudWidget
 from app.common.config import Config
 from app.Networking.CommandPacket import CommandPacket, TurnLeft, TurnRight, \
     TurretLeft, TurretRight, GoForward, GoBackward, GoLeft, GoRight, TurretReset
@@ -69,6 +70,11 @@ class TelemetryClient(QtCore.QThread):
 
     telemetry_packet_signal = pyqtSignal(TelemetryPacket)
     kinect_packet_signal = pyqtSignal(KinectPacket)
+    connection_timeout_signal = pyqtSignal()  # Emitted when no data received
+
+    # Timeout in milliseconds (2 seconds without data = timeout)
+    POLL_TIMEOUT_MS = 500
+    TIMEOUT_THRESHOLD = 4  # 4 timeouts = 2 seconds
 
     def __init__(self, port: int = None, parent=None):
         QtCore.QThread.__init__(self, parent)
@@ -81,6 +87,7 @@ class TelemetryClient(QtCore.QThread):
         self.running = True
         self.ultrasonic_sensor = 0
         self.color_sensor = 0
+        self._timeout_count = 0
 
     def robot_ip_address(self):
         return self._robot_ip_address
@@ -99,21 +106,43 @@ class TelemetryClient(QtCore.QThread):
         self.launch_hello_client()
 
         context = zmq.Context()
-        # First, connect our subscriber socket
         zmq_address = "tcp://{}:{}".format(self._robot_ip_address, self._port)
         self._logger.debug("ZMQ connecting to {}".format(zmq_address))
+
         subscriber = context.socket(zmq.SUB)
         subscriber.connect(zmq_address)
         subscriber.setsockopt(zmq.SUBSCRIBE, b'')
 
+        # Use poller for non-blocking receive with timeout
+        poller = zmq.Poller()
+        poller.register(subscriber, zmq.POLLIN)
+
         while self.running:
             try:
-                data = decompress(subscriber.recv())
-                if type(data) is TelemetryPacket:
-                    self.telemetry_packet_signal.emit(data)
-                if type(data) is KinectPacket:
-                    self.kinect_packet_signal.emit(data)
+                # Poll with timeout instead of blocking recv
+                events = dict(poller.poll(timeout=self.POLL_TIMEOUT_MS))
 
+                if subscriber in events and events[subscriber] == zmq.POLLIN:
+                    # Data available - reset timeout counter
+                    self._timeout_count = 0
+                    data = decompress(subscriber.recv(flags=zmq.NOBLOCK))
+
+                    if type(data) is TelemetryPacket:
+                        self.telemetry_packet_signal.emit(data)
+                    if type(data) is KinectPacket:
+                        self.kinect_packet_signal.emit(data)
+                else:
+                    # No data - increment timeout counter
+                    self._timeout_count += 1
+                    if self._timeout_count >= self.TIMEOUT_THRESHOLD:
+                        self._logger.warning("Connection timeout - no data for {} seconds".format(
+                            (self.POLL_TIMEOUT_MS * self.TIMEOUT_THRESHOLD) / 1000))
+                        self.connection_timeout_signal.emit()
+                        self._timeout_count = 0  # Reset to avoid spam
+
+            except zmq.Again:
+                # No message available (shouldn't happen with poller, but safe)
+                pass
             except Exception as e:
                 self._logger.exception(e)
                 break
@@ -135,10 +164,15 @@ class MainWindowWrapper(QDialog):
         self._main_window_ref = main_window  # Keep reference for status bar
         self._app = app
 
-        # Frame counters
+        # FPS tracking
+        import time
         self._video_frame_count = 0
         self._depth_frame_count = 0
         self._telemetry_count = 0
+        self._last_fps_time = time.time()
+        self._video_fps = 0.0
+        self._depth_fps = 0.0
+        self._fps_update_interval = 1.0  # Update FPS every second
 
         # Connection manager handles all networking
         self._connection_manager = ConnectionManager()
@@ -152,8 +186,40 @@ class MainWindowWrapper(QDialog):
             self._main_window.robot_ip_address.setText(default_robot_ip)
             self._logger.info("Robot IP loaded from environment: {}".format(default_robot_ip))
 
+        # Point cloud widget (hidden by default, shown when Cloud Point selected)
+        self._pointcloud_widget = PointCloudWidget()
+        self._pointcloud_widget.hide()
+
+        # Store last kinect data for point cloud generation
+        self._last_video_frame = None
+        self._last_depth_array = None
+
         self.setup_buttons()
         self._setup_stats_display()
+        self._setup_video_options()
+
+        # Handle window close
+        self._main_window_ref.closeEvent = self._on_window_close
+
+    def _on_window_close(self, event):
+        """Handle window close event."""
+        self._logger.info("Window closing, cleaning up...")
+        self.cleanup()
+        event.accept()
+
+    def cleanup(self):
+        """Disconnect and cleanup resources."""
+        self._logger.info("Cleanup: disconnecting from robot...")
+
+        # Disconnect from robot
+        if self._connection_manager.is_connected:
+            self._connection_manager.disconnect()
+
+        # Close point cloud widget
+        if self._pointcloud_widget:
+            self._pointcloud_widget.close()
+
+        self._logger.info("Cleanup complete.")
 
     def on_connect_button(self):
         """Handle connect/disconnect button click."""
@@ -199,31 +265,80 @@ class MainWindowWrapper(QDialog):
 
         # Create labels for stats
         self._stats_label = QLabel("CPU: --% | RAM: --% | WiFi: -- Mbps")
-        self._frames_label = QLabel("Video: 0 | Depth: 0")
+        self._frames_label = QLabel("Video: -- fps | Depth: -- fps")
 
         self._status_bar.addWidget(self._stats_label)
         self._status_bar.addPermanentWidget(self._frames_label)
 
+    def _setup_video_options(self):
+        """Setup video display mode radio buttons."""
+        # Connect radio buttons to display mode handler
+        self._main_window.radioButton_video.toggled.connect(self._on_video_mode_changed)
+        self._main_window.radioButton_depth.toggled.connect(self._on_video_mode_changed)
+        self._main_window.radioButton_cloud_point.toggled.connect(self._on_video_mode_changed)
+
+    def _on_video_mode_changed(self):
+        """Handle video display mode change."""
+        if self._main_window.radioButton_cloud_point.isChecked():
+            # Show point cloud widget in a separate window
+            self._pointcloud_widget.setWindowTitle("Point Cloud")
+            self._pointcloud_widget.resize(640, 480)
+            self._pointcloud_widget.show()
+        else:
+            self._pointcloud_widget.hide()
+
     def update_kinect(self, data: KinectPacket):
         self._logger.debug("Got kinect packet!")
 
-        # Update frame counters
+        # Update frame counters and calculate FPS
+        import time
         self._video_frame_count += 1
         self._depth_frame_count += 1
 
-        # Display RGB video frame
+        current_time = time.time()
+        elapsed = current_time - self._last_fps_time
+        if elapsed >= self._fps_update_interval:
+            self._video_fps = self._video_frame_count / elapsed
+            self._depth_fps = self._depth_frame_count / elapsed
+            self._video_frame_count = 0
+            self._depth_frame_count = 0
+            self._last_fps_time = current_time
+
+        # Get frame data
         video_frame = data.get_video_frame()
+        depth_array = data.get_depth()
+
+        # Store for point cloud generation
+        self._last_video_frame = video_frame
+        self._last_depth_array = depth_array
+
+        # Always display RGB video frame
         video_image = FrameProcessor.video_to_qimage(video_frame)
         self._main_window.kinect_video.setPixmap(QPixmap.fromImage(video_image))
 
-        # Display depth frame (using grayscale colormap)
-        # TODO: Add UI toggle for colormap selection (grayscale/jet/viridis)
-        depth_array = data.get_depth()
-        depth_image = FrameProcessor.depth_to_qimage(depth_array, colormap='grayscale')
-        self._main_window.label_10.setPixmap(QPixmap.fromImage(depth_image))
+        # Display based on selected mode
+        if self._main_window.radioButton_cloud_point.isChecked():
+            # Generate and display point cloud
+            try:
+                points, colors = FrameProcessor.depth_to_colored_pointcloud(depth_array, video_frame)
+                self._pointcloud_widget.update_pointcloud(points, colors)
+            except Exception as e:
+                self._logger.warning(f"Point cloud error: {e}")
 
-        # Update frame counter display
-        self._frames_label.setText(f"Video: {self._video_frame_count} | Depth: {self._depth_frame_count}")
+            # Still show depth in the depth panel with jet colormap
+            depth_image = FrameProcessor.depth_to_qimage(depth_array, colormap='jet')
+            self._main_window.label_10.setPixmap(QPixmap.fromImage(depth_image))
+        elif self._main_window.radioButton_depth.isChecked():
+            # Enhanced depth display with jet colormap
+            depth_image = FrameProcessor.depth_to_qimage(depth_array, colormap='jet')
+            self._main_window.label_10.setPixmap(QPixmap.fromImage(depth_image))
+        else:  # Video mode (default)
+            # Standard grayscale depth
+            depth_image = FrameProcessor.depth_to_qimage(depth_array, colormap='grayscale')
+            self._main_window.label_10.setPixmap(QPixmap.fromImage(depth_image))
+
+        # Update FPS display
+        self._frames_label.setText(f"Video: {self._video_fps:.1f} fps | Depth: {self._depth_fps:.1f} fps")
 
     def update_telemetry(self, data: TelemetryPacket):
         # self._logger.debug("Got telemetry packet!")

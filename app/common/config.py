@@ -79,11 +79,21 @@ class Config:
     # Depth Processing
     # ==========================================================================
 
-    # Raw depth range (11-bit sensor)
+    # Raw depth range (11-bit sensor, 0-2047)
     DEPTH_MAX = 2047
-    DEPTH_MIN_VALID = 400   # ~0.5m in raw units
-    DEPTH_MAX_VALID = 4000  # ~4m in raw units
+    DEPTH_MIN_VALID = _env_int('DEPTH_MIN_VALID', 300)   # Filter noise (too close)
+    DEPTH_MAX_VALID = _env_int('DEPTH_MAX_VALID', 1800)  # Filter noise (too far/invalid)
 
     # Display normalization
     DEPTH_DISPLAY_BITS = 10  # Clip to 10 bits before >> 2 to 8-bit
+
+    # ==========================================================================
+    # Point Cloud Settings
+    # ==========================================================================
+
+    # Use depth-based coloring (True) or attempt RGB alignment (False)
+    POINTCLOUD_DEPTH_COLORING = True
+
+    # Subsample stride (2 = every 2nd pixel, 4 = every 4th, etc.)
+    POINTCLOUD_STRIDE = _env_int('POINTCLOUD_STRIDE', 2)
 

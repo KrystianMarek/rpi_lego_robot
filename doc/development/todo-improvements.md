@@ -29,7 +29,11 @@ Last updated: December 2025
 
 ### Features Added
 - [x] **System Stats Display** — CPU, RAM, WiFi bandwidth from robot shown in status bar
-- [x] **Frame Counters** — Video and depth frame counts shown in status bar
+- [x] **FPS Counter** — Video and depth FPS shown in status bar (updated every 1s)
+- [x] **ZMQ Timeout Handling** — Poller with 500ms timeout, connection timeout detection
+- [x] **Point Cloud Widget** — 3D visualization using pyqtgraph GLViewWidget with view controls
+- [x] **Video Mode Radio Buttons** — Video/Depth/Cloud Point modes now functional
+- [x] **Auto Disconnect** — Clean disconnect on window close or Ctrl+C
 
 ---
 
@@ -117,8 +121,8 @@ cy = 242.7   # principal point y
 - [x] ~~Add keyboard shortcuts for movement (WASD)~~ — Already implemented!
 - [ ] Add keyboard shortcut hints to UI buttons (tooltips or labels)
 - [ ] Remember last robot IP in config file
-- [ ] Add FPS counter for video stream
-- [ ] Add depth colormap options (jet, viridis, etc.)
+- [x] Add FPS counter for video stream — Shows in status bar
+- [x] Add depth colormap options (jet, viridis, etc.) — Jet colormap in Depth/Cloud modes
 
 **Existing keyboard shortcuts:**
 | Key | Action |
@@ -134,9 +138,31 @@ cy = 242.7   # principal point y
 
 #### Server Improvements
 - [ ] Add graceful shutdown handling
-- [ ] Implement Kinect tilt motor control (currently returns 0)
 - [ ] Add configurable frame rate limiting
-- [ ] Add CPU/memory monitoring to telemetry
+- [x] Add CPU/memory monitoring to telemetry — Done! System stats in status bar
+
+#### Kinect Tilt Motor Control
+**Status:** Not implemented (returns 0 in `KinectProcess.py`)
+
+**libfreenect supports tilt control:**
+```python
+freenect.set_tilt_degs(dev, angle)  # Set tilt (-30° to +30°)
+freenect.get_tilt_degs(state)       # Get current angle
+freenect.get_tilt_state(dev)        # Get state object
+freenect.get_tilt_status(state)     # Motor status (moving/stopped)
+```
+
+**Implementation needed:**
+1. Add `set_tilt_degs()` method to `KinectProcess`
+2. Create `KinectTiltCommand` packet type
+3. Wire command from GUI to server via CommandReceiver
+4. Add tilt slider/buttons to GUI (range: -30° to +30°)
+
+**Files to modify:**
+- `app/server/KinectProcess.py` — Uncomment and implement tilt methods
+- `app/Networking/CommandPacket.py` — Add `KinectTilt` command
+- `app/server/CommandReceiver.py` — Handle tilt command
+- `app/client/gui/main_window.ui` — Add tilt slider widget
 
 #### Networking
 - [ ] Add connection timeout handling
