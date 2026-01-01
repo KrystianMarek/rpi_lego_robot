@@ -73,26 +73,41 @@ Value is in millidegrees Celsius (divide by 1000).
 
 ## Wiring Diagram
 
-```
-                    ┌─────────────────┐
-                    │  Raspberry Pi 3 │
-                    │                 │
-                    │  GPIO ──────────┼──── BrickPi+ (stacked)
-                    │  USB  ──────────┼──── Kinect (powered hub)
-                    │  I²C  ──────────┼──── Battery Monitor (on BrickPi+)
-                    └─────────────────┘
+```mermaid
+flowchart TB
+    subgraph RPI ["Raspberry Pi 3"]
+        GPIO["GPIO"]
+        USB["USB"]
+        I2C["I²C"]
+    end
 
-┌─────────────────────────────────────────────────────────────────┐
-│                         BrickPi+                                │
-│                                                                 │
-│  Motor Ports:                    Sensor Ports:                  │
-│  ┌────┐ ┌────┐ ┌────┐ ┌────┐    ┌────┐ ┌────┐ ┌────┐ ┌────┐    │
-│  │ A  │ │ B  │ │ C  │ │ D  │    │ 1  │ │ 2  │ │ 3  │ │ 4  │    │
-│  └──┬─┘ └────┘ └──┬─┘ └──┬─┘    └──┬─┘ └────┘ └────┘ └──┬─┘    │
-│     │             │      │         │                     │      │
-│  Left          Turret  Right    Color               Ultrasonic  │
-│  Motor         Motor   Motor    Sensor              Sensor      │
-└─────────────────────────────────────────────────────────────────┘
+    GPIO -->|stacked| BRICKPI
+    USB -->|powered hub| KINECT["Kinect"]
+    I2C -->|on BrickPi+| BATTERY["Battery Monitor"]
+
+    subgraph BRICKPI ["BrickPi+"]
+        direction TB
+        subgraph MOTORS ["Motor Ports"]
+            direction LR
+            MA["A"]
+            MB["B"]
+            MC["C"]
+            MD["D"]
+        end
+        subgraph SENSORS ["Sensor Ports"]
+            direction LR
+            S1["1"]
+            S2["2"]
+            S3["3"]
+            S4["4"]
+        end
+    end
+
+    MA --- LM["Left Motor"]
+    MC --- TM["Turret Motor"]
+    MD --- RM["Right Motor"]
+    S1 --- CS["Color Sensor"]
+    S4 --- US["Ultrasonic Sensor"]
 ```
 
 ## Raspberry Pi Configuration

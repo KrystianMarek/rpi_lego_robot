@@ -11,32 +11,32 @@ The robot streams video, depth, and telemetry to a desktop client over WiFi. The
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    CLIENT (Mac/PC)                               │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  gui.py → MainWindowWrapper                              │    │
-│  │    ├── ConnectionManager (state machine)                 │    │
-│  │    ├── FrameProcessor (video/depth conversion)           │    │
-│  │    ├── TelemetryClient (ZMQ SUB, receives data)          │    │
-│  │    └── CommandClient (ZMQ PUSH, sends commands)          │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│                           │                                      │
-│              ZMQ PUSH ────┼──── ZMQ SUB                          │
-│            (commands)     │   (telemetry)                        │
-└───────────────────────────┼──────────────────────────────────────┘
-                            │ WiFi
-┌───────────────────────────┼──────────────────────────────────────┐
-│                    SERVER (Raspberry Pi 3)                       │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  server.py                                               │    │
-│  │    ├── HelloServer (ZMQ REQ/REP handshake)               │    │
-│  │    ├── CommandReceiver (ZMQ PULL, receives commands)     │    │
-│  │    ├── BrickPiWrapper (motor control, sensors, psutil)   │    │
-│  │    ├── KinectProcess (freenect, video+depth capture)     │    │
-│  │    └── TelemetryPublisher (ZMQ PUB, broadcasts data)     │    │
-│  └─────────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph CLIENT ["CLIENT (Mac/PC)"]
+        direction TB
+        subgraph GUIPY ["gui.py → MainWindowWrapper"]
+            CM["ConnectionManager\n(state machine)"]
+            FP["FrameProcessor\n(video/depth conversion)"]
+            TC["TelemetryClient\n(ZMQ SUB, receives data)"]
+            CC["CommandClient\n(ZMQ PUSH, sends commands)"]
+        end
+    end
+
+    subgraph SERVER ["SERVER (Raspberry Pi 3)"]
+        direction TB
+        subgraph SERVERPY ["server.py"]
+            HS["HelloServer\n(ZMQ REQ/REP handshake)"]
+            CR["CommandReceiver\n(ZMQ PULL, receives commands)"]
+            BPW["BrickPiWrapper\n(motor control, sensors, psutil)"]
+            KP["KinectProcess\n(freenect, video+depth capture)"]
+            TP["TelemetryPublisher\n(ZMQ PUB, broadcasts data)"]
+        end
+    end
+
+    CC -->|"ZMQ PUSH\n(commands)"| CR
+    TP -->|"ZMQ SUB\n(telemetry)"| TC
+    CLIENT <-->|WiFi| SERVER
 ```
 
 ## Tech Stack

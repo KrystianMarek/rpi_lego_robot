@@ -129,23 +129,40 @@ rpi_lego_robot/
 
 ### Server Side
 
-```
-server.py (main)
-    ├── CommandReceiver (Thread) ─── PULL :5560 ─── receives commands
-    ├── HelloServer (Thread) ─────── REP :5556 ──── handshake
-    │       └── starts on first client:
-    │           ├── BrickPiWrapper (Thread)
-    │           └── KinectProcess (Process)
-    └── telemetry_publisher() ────── PUB :5559 ──── broadcasts data
+```mermaid
+flowchart TB
+    MAIN["server.py (main)"]
+
+    MAIN --> CR["CommandReceiver (Thread)"]
+    CR -->|"PULL :5560"| CR_DESC["receives commands"]
+
+    MAIN --> HS["HelloServer (Thread)"]
+    HS -->|"REP :5556"| HS_DESC["handshake"]
+
+    HS -->|"starts on first client"| STARTED
+    subgraph STARTED [" "]
+        BPW["BrickPiWrapper (Thread)"]
+        KP["KinectProcess (Process)"]
+    end
+
+    MAIN --> TP["telemetry_publisher()"]
+    TP -->|"PUB :5559"| TP_DESC["broadcasts data"]
 ```
 
 ### Client Side
 
-```
-MainWindowWrapper (QDialog)
-    ├── TelemetryClient (QThread) ── SUB to robot:5559
-    ├── CommandClient (QThread) ──── PUSH to robot:5560
-    └── HelloClient (QThread) ────── REQ to robot:5556
+```mermaid
+flowchart TB
+    MW["MainWindowWrapper (QDialog)"]
+
+    MW --> TC["TelemetryClient (QThread)"]
+    TC -->|"SUB"| ROBOT1["robot:5559"]
+
+    MW --> CC["CommandClient (QThread)"]
+    CC -->|"PUSH"| ROBOT2["robot:5560"]
+
+    MW --> HC["HelloClient (QThread)"]
+    HC -->|"REQ"| ROBOT3["robot:5556"]
 ```
 
 ## UI Development

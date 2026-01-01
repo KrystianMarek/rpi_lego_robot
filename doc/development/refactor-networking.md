@@ -13,32 +13,31 @@ The current architecture requires the robot to **dial back to the client** to re
 
 ## Current Architecture
 
-```
-CLIENT (gui.py)                              SERVER (server.py / Raspberry Pi)
-═══════════════                              ════════════════════════════════
+```mermaid
+flowchart LR
+    subgraph CLIENT ["CLIENT (gui.py)"]
+        HC["HelloClient\nconnects to :5556"]
+        CS["CommandServer\nbinds :5560 (PUB)"]
+        TC["TelemetryClient\nconnects to :5559"]
+    end
 
-┌─────────────────────┐                      ┌─────────────────────────────┐
-│ HelloClient         │───── REQ ──────────► │ HelloServer                 │
-│ connects to :5556   │◄──── REP ──────────  │ binds :5556                 │
-└─────────────────────┘                      └─────────────────────────────┘
-                                                      │
-                                                      │ extracts client IP
-                                                      ▼
-┌─────────────────────┐                      ┌─────────────────────────────┐
-│ CommandServer       │◄──── SUB ──────────  │ CommandSubscriber           │
-│ binds :5560 (PUB)   │                      │ connects to client:5560     │
-└─────────────────────┘                      └─────────────────────────────┘
-        ▲                                             │
-        │ PROBLEM: Robot dials OUT to client          │
-        │ Requires client IP detection                │
-        └─────────────────────────────────────────────┘
+    subgraph SERVER ["SERVER (server.py / Raspberry Pi)"]
+        HS["HelloServer\nbinds :5556"]
+        CSUB["CommandSubscriber\nconnects to client:5560"]
+        MS["Main Server\nbinds :5559 (PUB)"]
+    end
 
-┌─────────────────────┐                      ┌─────────────────────────────┐
-│ TelemetryClient     │───── SUB ──────────► │ Main Server                 │
-│ connects to :5559   │                      │ binds :5559 (PUB)           │
-└─────────────────────┘                      └─────────────────────────────┘
-        ✓ This pattern is correct
+    HC <-->|"REQ/REP"| HS
+    HS -->|"extracts client IP"| CSUB
+    CSUB -->|"SUB"| CS
+    TC -->|"SUB"| MS
+
+    style CS fill:#ffcccc
+    style CSUB fill:#ffcccc
 ```
+
+> ⚠️ **PROBLEM**: Robot dials OUT to client. Requires client IP detection.
+> ✓ TelemetryClient pattern is correct.
 
 ### Current Port Assignments
 
@@ -52,24 +51,29 @@ CLIENT (gui.py)                              SERVER (server.py / Raspberry Pi)
 
 ## Target Architecture
 
-```
-CLIENT (gui.py)                              SERVER (server.py / Raspberry Pi)
-═══════════════                              ════════════════════════════════
+```mermaid
+flowchart LR
+    subgraph CLIENT ["CLIENT (gui.py)"]
+        TC["TelemetryClient\nconnects to :5559"]
+        CC["CommandClient\nconnects to :5560"]
+    end
 
-┌─────────────────────┐                      ┌─────────────────────────────┐
-│ TelemetryClient     │───── SUB ──────────► │ TelemetryPublisher          │
-│ connects to :5559   │                      │ binds :5559 (PUB)           │
-└─────────────────────┘                      └─────────────────────────────┘
+    subgraph SERVER ["SERVER (server.py / Raspberry Pi)"]
+        TP["TelemetryPublisher\nbinds :5559 (PUB)"]
+        CR["CommandReceiver\nbinds :5560 (PULL)"]
+    end
 
-┌─────────────────────┐                      ┌─────────────────────────────┐
-│ CommandClient       │───── PUSH ─────────► │ CommandReceiver             │
-│ connects to :5560   │                      │ binds :5560 (PULL)          │
-└─────────────────────┘                      └─────────────────────────────┘
-        │                                             ▲
-        │ Client only needs robot IP                  │
-        │ Multiple clients can connect                │
-        └─────────────────────────────────────────────┘
+    TC -->|"SUB"| TP
+    CC -->|"PUSH"| CR
+
+    style TC fill:#ccffcc
+    style CC fill:#ccffcc
+    style TP fill:#ccffcc
+    style CR fill:#ccffcc
 ```
+
+> ✓ Client only needs robot IP
+> ✓ Multiple clients can connect
 
 ### Target Port Assignments
 

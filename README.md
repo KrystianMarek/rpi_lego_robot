@@ -76,15 +76,25 @@ Use the new `scripts/setup-*.sh` scripts which use [uv](https://github.com/astra
 
 ## Architecture
 
-```
-┌──────────────────────┐              ┌──────────────────────┐
-│  CLIENT (PC)         │   TCP/IP    │  SERVER (RPi)        │
-│                      │◄───────────►│                      │
-│  PyQt5 GUI           │   ZeroMQ    │  BrickPi + Kinect    │
-│  - Movement controls │             │  - Motor control     │
-│  - Telemetry display │             │  - Sensor reading    │
-│  - Video streaming   │             │  - Camera capture    │
-└──────────────────────┘              └──────────────────────┘
+```mermaid
+flowchart LR
+    subgraph CLIENT ["CLIENT (PC)"]
+        direction TB
+        GUI["PyQt5 GUI"]
+        C1["Movement controls"]
+        C2["Telemetry display"]
+        C3["Video streaming"]
+    end
+
+    subgraph SERVER ["SERVER (RPi)"]
+        direction TB
+        HW["BrickPi + Kinect"]
+        S1["Motor control"]
+        S2["Sensor reading"]
+        S3["Camera capture"]
+    end
+
+    CLIENT <-->|"TCP/IP\nZeroMQ"| SERVER
 ```
 
 See [Architecture Documentation](doc/architecture.md) for detailed design.

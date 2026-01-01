@@ -4,64 +4,56 @@ K.O.C (Kinect on Caterpillar) uses a distributed client-server architecture with
 
 ## Overview
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  CLIENT (PC with PyQt5 GUI)                                                 │
-│                                                                             │
-│  ┌───────────────────────┐      ┌─────────────────────────────────────────┐ │
-│  │   MainWindowWrapper   │──────│  CommandClient                          │ │
-│  │   (PyQt5 GUI)         │      │  ZMQ PUSH connects to robot:5560        │ │
-│  │                       │      │  Sends movement commands                │ │
-│  │  - Movement controls  │      └─────────────────────────────────────────┘ │
-│  │  - Telemetry display  │                                                  │
-│  │  - Kinect video feed  │      ┌─────────────────────────────────────────┐ │
-│  │  - Sensor readings    │      │  TelemetryClient                        │ │
-│  └───────────────────────┘      │  ZMQ SUB connects to robot:5559         │ │
-│                                 │  Receives telemetry & Kinect data       │ │
-│                                 └─────────────────────────────────────────┘ │
-│                                 ┌─────────────────────────────────────────┐ │
-│                                 │  HelloClient                            │ │
-│                                 │  ZMQ REQ connects to robot:5556         │ │
-│                                 │  Initial handshake                      │ │
-│                                 └─────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                        │
-                                        │ TCP/IP Network
-                                        │ (only robot IP needed)
-                                        │
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  SERVER (Raspberry Pi 3 + BrickPi+)                                         │
-│                                                                             │
-│  ┌────────────────────┐         ┌───────────────────────────────────────┐   │
-│  │  HelloServer       │─────────│  Handshake                            │   │
-│  │  ZMQ REP :5556     │         │  Triggers BrickPi/Kinect startup      │   │
-│  └────────────────────┘         └───────────────────────────────────────┘   │
-│                                                                             │
-│  ┌────────────────────┐         ┌───────────────────────────────────────┐   │
-│  │  CommandReceiver   │─────────│  Receives commands from clients       │   │
-│  │  ZMQ PULL :5560    │         │  Translates to motor commands         │   │
-│  │  (Thread)          │         │  Multiple clients supported           │   │
-│  └────────────────────┘         └───────────────────────────────────────┘   │
-│                                                                             │
-│  ┌────────────────────┐         ┌───────────────────────────────────────┐   │
-│  │  BrickPiWrapper    │─────────│  Motor Control & Sensor Reading       │   │
-│  │  ZMQ PUSH :5557    │         │  Runs in dedicated Thread             │   │
-│  │  (Thread)          │         │  Processes command queue              │   │
-│  └────────────────────┘         └───────────────────────────────────────┘   │
-│                                                                             │
-│  ┌────────────────────┐         ┌───────────────────────────────────────┐   │
-│  │  KinectProcess     │─────────│  RGB & Depth Capture                  │   │
-│  │  ZMQ PUSH :5558    │         │  Runs in dedicated Process            │   │
-│  │  (Process)         │         │  Uses libfreenect                     │   │
-│  └────────────────────┘         └───────────────────────────────────────┘   │
-│                                                                             │
-│  ┌────────────────────┐         ┌───────────────────────────────────────┐   │
-│  │  Telemetry Publisher│────────│  Aggregates BrickPi + Kinect data     │   │
-│  │  ZMQ PULL :5557    │         │  Publishes unified telemetry stream   │   │
-│  │  ZMQ PULL :5558    │         │                                       │   │
-│  │  ZMQ PUB  :5559    │         │                                       │   │
-│  └────────────────────┘         └───────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph CLIENT ["CLIENT (PC with PyQt5 GUI)"]
+        direction TB
+        subgraph GUI ["MainWindowWrapper (PyQt5 GUI)"]
+            G1["Movement controls"]
+            G2["Telemetry display"]
+            G3["Kinect video feed"]
+            G4["Sensor readings"]
+        end
+
+        CC["CommandClient\nZMQ PUSH → robot:5560\nSends movement commands"]
+        TC["TelemetryClient\nZMQ SUB → robot:5559\nReceives telemetry & Kinect data"]
+        HC["HelloClient\nZMQ REQ → robot:5556\nInitial handshake"]
+
+        GUI --> CC
+        GUI --> TC
+        GUI --> HC
+    end
+
+    subgraph SERVER ["SERVER (Raspberry Pi 3 + BrickPi+)"]
+        direction TB
+        HS["HelloServer\nZMQ REP :5556"]
+        HS_DESC["Handshake\nTriggers BrickPi/Kinect startup"]
+        HS --- HS_DESC
+
+        CR["CommandReceiver\nZMQ PULL :5560\n(Thread)"]
+        CR_DESC["Receives commands from clients\nTranslates to motor commands\nMultiple clients supported"]
+        CR --- CR_DESC
+
+        BPW["BrickPiWrapper\nZMQ PUSH :5557\n(Thread)"]
+        BPW_DESC["Motor Control & Sensor Reading\nRuns in dedicated Thread\nProcesses command queue"]
+        BPW --- BPW_DESC
+
+        KP["KinectProcess\nZMQ PUSH :5558\n(Process)"]
+        KP_DESC["RGB & Depth Capture\nRuns in dedicated Process\nUses libfreenect"]
+        KP --- KP_DESC
+
+        TP["Telemetry Publisher\nZMQ PULL :5557, :5558\nZMQ PUB :5559"]
+        TP_DESC["Aggregates BrickPi + Kinect data\nPublishes unified telemetry stream"]
+        TP --- TP_DESC
+
+        BPW --> TP
+        KP --> TP
+    end
+
+    CLIENT <-->|"TCP/IP Network\n(only robot IP needed)"| SERVER
+    HC <-->|REQ/REP| HS
+    CC -->|PUSH| CR
+    TP -->|PUB/SUB| TC
 ```
 
 ## Design Principles
@@ -101,25 +93,38 @@ The system uses three ZeroMQ messaging patterns:
 
 ### Command Flow (Client → Server)
 
-```
-User Input → MainWindowWrapper → CommandPacket → CommandClient (PUSH)
-    ↓
-    ↓ connects to robot:5560
-    ↓
-CommandReceiver (PULL) → TelemetryPacket → Command Queue
-    ↓
-BrickPiWrapper → BrickPi Hardware → Motors
+```mermaid
+flowchart LR
+    UI["User Input"] --> MW["MainWindowWrapper"]
+    MW --> CP["CommandPacket"]
+    CP --> CC["CommandClient\n(PUSH)"]
+    CC -->|"connects to\nrobot:5560"| CR["CommandReceiver\n(PULL)"]
+    CR --> TP["TelemetryPacket"]
+    TP --> CQ["Command Queue"]
+    CQ --> BPW["BrickPiWrapper"]
+    BPW --> HW["BrickPi Hardware"]
+    HW --> M["Motors"]
 ```
 
 ### Telemetry Flow (Server → Client)
 
-```
-BrickPi Sensors → BrickPiWrapper → TelemetryPacket → PUSH :5557
-Kinect Camera   → KinectProcess  → KinectPacket   → PUSH :5558
-    ↓
-Telemetry Publisher (PULL) → Aggregator → PUB :5559
-    ↓
-TelemetryClient (SUB) → MainWindowWrapper → GUI Display
+```mermaid
+flowchart TB
+    subgraph Sources ["Data Sources"]
+        BS["BrickPi Sensors"] --> BPW["BrickPiWrapper"]
+        KC["Kinect Camera"] --> KP["KinectProcess"]
+    end
+
+    BPW --> TP1["TelemetryPacket"]
+    KP --> KP1["KinectPacket"]
+
+    TP1 -->|"PUSH :5557"| AGG["Telemetry Publisher\n(PULL)"]
+    KP1 -->|"PUSH :5558"| AGG
+
+    AGG --> PUB["Aggregator"]
+    PUB -->|"PUB :5559"| TC["TelemetryClient\n(SUB)"]
+    TC --> MW["MainWindowWrapper"]
+    MW --> GUI["GUI Display"]
 ```
 
 ## Threading Model

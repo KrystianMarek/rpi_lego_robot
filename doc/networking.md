@@ -141,46 +141,43 @@ Video and depth frames from Kinect.
 
 ### Connection Handshake
 
-```
-Client                              Server
-   │                                   │
-   │──── HelloClientPacket(seq=1) ────>│  (REQ → REP :5556)
-   │                                   │
-   │<─── HelloServerPacket(seq=2) ─────│
-   │     {running: true}               │
-   │                                   │
-   │     [Server starts BrickPi/Kinect]│
-   │                                   │
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: REQ → REP :5556
+    Client->>Server: HelloClientPacket(seq=1)
+    Server->>Client: HelloServerPacket(seq=2)<br/>{running: true}
+    Note over Server: Server starts BrickPi/Kinect
 ```
 
 ### Command Transmission
 
-```
-Client                              Server
-   │                                   │
-   │──── CommandPacket ───────────────>│  (PUSH → PULL :5560)
-   │     {command: GO_FORWARD,         │
-   │      value: 200}                  │
-   │                                   │
-   │     [CommandReceiver receives]    │
-   │     [Converts to TelemetryPacket] │
-   │     [Queues for BrickPiWrapper]   │
-   │                                   │
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: PUSH → PULL :5560
+    Client->>Server: CommandPacket<br/>{command: GO_FORWARD, value: 200}
+    Note over Server: CommandReceiver receives
+    Note over Server: Converts to TelemetryPacket
+    Note over Server: Queues for BrickPiWrapper
 ```
 
 ### Telemetry Stream
 
-```
-Client                              Server
-   │                                   │
-   │<─── TelemetryPacket ─────────────│  (SUB ← PUB :5559)
-   │     {motors, sensors, temp, ...}  │
-   │                                   │
-   │<─── KinectPacket ────────────────│
-   │     {video_frame, depth}          │
-   │                                   │
-   │     [Repeats at ~10Hz]            │
-   │                                   │
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: SUB ← PUB :5559
+    loop Repeats at ~10Hz
+        Server->>Client: TelemetryPacket<br/>{motors, sensors, temp, ...}
+        Server->>Client: KinectPacket<br/>{video_frame, depth}
+    end
 ```
 
 ## Command Translation
