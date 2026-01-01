@@ -2,6 +2,10 @@
 PointCloudWidget - 3D visualization of Kinect depth data.
 
 Uses pyqtgraph's OpenGL widget for real-time point cloud rendering.
+
+Note:
+    Point cloud coordinates are in METERS (after depth conversion fix).
+    Camera and grid settings are configured accordingly.
 """
 import numpy as np
 
@@ -24,6 +28,8 @@ class PointCloudWidget(QWidget):
     Widget for displaying 3D point clouds from Kinect depth data.
 
     Falls back to a placeholder label if pyqtgraph is not installed.
+
+    Coordinates are in METERS.
     """
 
     # Subsample factor (stride=2 means every 2nd pixel → 1/4 points)
@@ -46,18 +52,19 @@ class PointCloudWidget(QWidget):
         self._gl_widget = gl.GLViewWidget()
 
         # Initial camera - top-down angled view per user preference
-        self._default_distance = 1500
+        # Coordinates are in METERS (typical Kinect range 0.5-4m)
+        self._default_distance = 5.0      # 5 meters back
         self._default_elevation = 90
         self._default_azimuth = -90
-        self._default_center = QVector3D(0, 0, 600)
+        self._default_center = QVector3D(0, 0, 2.0)  # Center at 2m depth
 
         # Apply initial camera position
         self._apply_camera_defaults()
 
-        # Add small reference grid
+        # Add reference grid (in meters)
         grid = gl.GLGridItem()
-        grid.setSize(2000, 2000)
-        grid.setSpacing(250, 250)
+        grid.setSize(6, 6)          # 6m x 6m grid
+        grid.setSpacing(0.5, 0.5)   # 50cm grid lines
         grid.setColor((100, 100, 100, 80))  # Subtle gray
         self._gl_widget.addItem(grid)
 
@@ -72,9 +79,9 @@ class PointCloudWidget(QWidget):
 
     def _add_axes(self):
         """Add small XYZ coordinate axes away from data."""
-        # Position axes in corner, away from typical point cloud data
-        origin_offset = (-900, -700, -100)
-        axis_length = 150
+        # Position axes in corner, away from typical point cloud data (in meters)
+        origin_offset = (-2.5, -2.0, -0.5)  # Corner position in meters
+        axis_length = 0.5  # 50cm axes
         axis_width = 2
 
         ox, oy, oz = origin_offset
@@ -168,7 +175,7 @@ class PointCloudWidget(QWidget):
             elev = self._gl_widget.opts.get('elevation', 0)
             azim = self._gl_widget.opts.get('azimuth', 0)
             dist = self._gl_widget.opts.get('distance', 0)
-            self._angle_label.setText(f"El:{elev:.0f}° Az:{azim:.0f}° D:{dist:.0f}")
+            self._angle_label.setText(f"El:{elev:.0f}° Az:{azim:.0f}° D:{dist:.1f}m")
 
     def _apply_camera_defaults(self):
         """Apply default camera settings."""
@@ -181,28 +188,28 @@ class PointCloudWidget(QWidget):
     def _set_top_view(self):
         """Set camera to top-down view (looking down Z axis)."""
         if self._gl_widget:
-            self._gl_widget.opts['distance'] = 3000
-            self._gl_widget.opts['elevation'] = 90  # Directly above
+            self._gl_widget.opts['distance'] = 8.0   # 8 meters back
+            self._gl_widget.opts['elevation'] = 90   # Directly above
             self._gl_widget.opts['azimuth'] = 0
-            self._gl_widget.opts['center'] = QVector3D(0, 0, 600)
+            self._gl_widget.opts['center'] = QVector3D(0, 0, 2.0)  # Center at 2m depth
             self._update_angle_display()
 
     def _set_side_view(self):
         """Set camera to side view (looking along X axis)."""
         if self._gl_widget:
-            self._gl_widget.opts['distance'] = 3000
-            self._gl_widget.opts['elevation'] = 0   # Level
-            self._gl_widget.opts['azimuth'] = 0     # Looking along X
-            self._gl_widget.opts['center'] = QVector3D(0, 0, 600)
+            self._gl_widget.opts['distance'] = 8.0   # 8 meters back
+            self._gl_widget.opts['elevation'] = 0    # Level
+            self._gl_widget.opts['azimuth'] = 0      # Looking along X
+            self._gl_widget.opts['center'] = QVector3D(0, 0, 2.0)  # Center at 2m depth
             self._update_angle_display()
 
     def _set_front_view(self):
         """Set camera to front view (robot's perspective, looking along Z)."""
         if self._gl_widget:
-            self._gl_widget.opts['distance'] = 2500
+            self._gl_widget.opts['distance'] = 6.0   # 6 meters back
             self._gl_widget.opts['elevation'] = 15
-            self._gl_widget.opts['azimuth'] = 180   # Looking along +Z
-            self._gl_widget.opts['center'] = QVector3D(0, 0, 800)
+            self._gl_widget.opts['azimuth'] = 180    # Looking along +Z
+            self._gl_widget.opts['center'] = QVector3D(0, 0, 2.5)  # Center at 2.5m depth
             self._update_angle_display()
 
     def _setup_fallback(self):

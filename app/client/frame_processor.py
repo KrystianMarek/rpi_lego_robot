@@ -5,11 +5,80 @@ Separates image processing from GUI code for:
 - Testability
 - Future point cloud support
 - Depth colormap options
+
+Note on Kinect depth:
+    Raw Kinect v1 depth values are DISPARITY (inversely proportional to distance),
+    NOT metric distance. Use raw_depth_to_meters() for conversion.
 """
 import numpy as np
 from PyQt5.QtGui import QImage
 
 from app.common.config import Config
+
+
+# =============================================================================
+# Depth Conversion Constants (Kinect v1)
+# =============================================================================
+
+# Invalid depth values from Kinect
+KINECT_DEPTH_INVALID_MIN = 0
+KINECT_DEPTH_INVALID_MAX = 2047
+
+# Conversion formula constants (tangent-based, standard for Kinect v1)
+# Formula: distance_m = 0.1236 * tan(raw_depth / 2842.5 + 1.1863)
+KINECT_DEPTH_TAN_SCALE = 2842.5
+KINECT_DEPTH_TAN_OFFSET = 1.1863
+KINECT_DEPTH_MULTIPLIER = 0.1236
+
+
+def raw_depth_to_meters(raw_depth: np.ndarray) -> np.ndarray:
+    """
+    Convert raw Kinect v1 depth values to meters.
+
+    Raw Kinect depth is disparity (inversely proportional to distance),
+    NOT metric distance. This function applies the standard conversion formula.
+
+    Formula: distance_m = 0.1236 * tan(raw_depth / 2842.5 + 1.1863)
+
+    Args:
+        raw_depth: Raw 11-bit depth values from Kinect (0-2047)
+
+    Returns:
+        Distance in meters. Invalid pixels (0 or 2047) return np.nan.
+
+    Note:
+        Expected accuracy per distance:
+        - 0.5-1.0m: ±1-3mm
+        - 2.0m: ±1-2cm
+        - 3.0m+: ±4-5cm
+    """
+    raw = raw_depth.astype(np.float32)
+
+    # Mask invalid values (0 = too close/no return, 2047 = too far/saturated)
+    valid = (raw > KINECT_DEPTH_INVALID_MIN) & (raw < KINECT_DEPTH_INVALID_MAX)
+
+    # Initialize output with NaN for invalid pixels
+    distance_m = np.full_like(raw, np.nan, dtype=np.float32)
+
+    # Apply tangent-based conversion formula for valid pixels
+    distance_m[valid] = KINECT_DEPTH_MULTIPLIER * np.tan(
+        raw[valid] / KINECT_DEPTH_TAN_SCALE + KINECT_DEPTH_TAN_OFFSET
+    )
+
+    return distance_m
+
+
+def get_valid_depth_mask(raw_depth: np.ndarray) -> np.ndarray:
+    """
+    Get mask of valid depth pixels.
+
+    Args:
+        raw_depth: Raw 11-bit depth values from Kinect
+
+    Returns:
+        Boolean mask where True = valid depth value
+    """
+    return (raw_depth > KINECT_DEPTH_INVALID_MIN) & (raw_depth < KINECT_DEPTH_INVALID_MAX)
 
 
 class FrameProcessor:
@@ -160,12 +229,12 @@ class FrameProcessor:
         pixels into 3D world coordinates.
 
         Args:
-            depth_array: Raw depth values from Kinect
-            fx, fy: Focal lengths (default from Config)
-            cx, cy: Principal point (default from Config)
+            depth_array: Raw depth values from Kinect (11-bit, 0-2047)
+            fx, fy: Focal lengths in pixels (default from Config)
+            cx, cy: Principal point in pixels (default from Config)
 
         Returns:
-            numpy array of shape (N, 3) containing XYZ points
+            numpy array of shape (N, 3) containing XYZ points in METERS
         """
         # Use config defaults if not specified
         fx = fx or Config.KINECT_FX
@@ -180,14 +249,17 @@ class FrameProcessor:
         v = np.arange(height)
         u, v = np.meshgrid(u, v)
 
-        # Convert raw depth to meters (approximate formula for Kinect v1)
-        # Note: Raw depth is disparity, not distance
-        z = depth_array.astype(np.float32)
+        # Convert raw depth to meters (Kinect raw values are disparity, not distance!)
+        z = raw_depth_to_meters(depth_array)
 
-        # Filter invalid depth values
-        valid_mask = (z > Config.DEPTH_MIN_VALID) & (z < Config.DEPTH_MAX_VALID)
+        # Filter invalid depth values (NaN from conversion + metric range)
+        valid_mask = (
+            ~np.isnan(z) &
+            (z > Config.DEPTH_MIN_METERS) &
+            (z < Config.DEPTH_MAX_METERS)
+        )
 
-        # Convert to 3D coordinates
+        # Convert to 3D coordinates (now in meters)
         x = (u - cx) * z / fx
         y = (v - cy) * z / fy
 
@@ -215,14 +287,14 @@ class FrameProcessor:
         makes direct pixel alignment inaccurate without proper calibration.
 
         Args:
-            depth_array: Raw depth values
+            depth_array: Raw depth values (11-bit, 0-2047)
             video_frame: RGB video frame (optional, for RGB coloring attempt)
             use_depth_coloring: True for depth gradient, False for RGB (default: Config)
-            fx, fy, cx, cy: Camera intrinsics
+            fx, fy, cx, cy: Camera intrinsics in pixels
 
         Returns:
             Tuple of (points, colors) where:
-            - points: (N, 3) XYZ coordinates
+            - points: (N, 3) XYZ coordinates in METERS
             - colors: (N, 4) RGBA values (0-255)
         """
         fx = fx or Config.KINECT_FX
@@ -241,13 +313,20 @@ class FrameProcessor:
         v = np.arange(0, height, stride)
         u, v = np.meshgrid(u, v)
 
-        # Get depth values at subsampled positions
-        z = depth_array[::stride, ::stride].astype(np.float32)
+        # Get raw depth values at subsampled positions
+        raw_depth_subsampled = depth_array[::stride, ::stride]
 
-        # Filter invalid depth values
-        valid_mask = (z > Config.DEPTH_MIN_VALID) & (z < Config.DEPTH_MAX_VALID)
+        # Convert raw depth to meters (Kinect raw values are disparity, not distance!)
+        z = raw_depth_to_meters(raw_depth_subsampled)
 
-        # Convert to 3D coordinates
+        # Filter invalid depth values (NaN from conversion + metric range)
+        valid_mask = (
+            ~np.isnan(z) &
+            (z > Config.DEPTH_MIN_METERS) &
+            (z < Config.DEPTH_MAX_METERS)
+        )
+
+        # Convert to 3D coordinates (now in meters)
         # X: right is positive
         # Y: up is positive (flip from image coordinates where Y=0 is top)
         # Z: forward (into the scene) is positive
@@ -277,7 +356,7 @@ class FrameProcessor:
             colors[:, 2] = np.clip((1.5 - np.abs(4 * z_normalized - 1)) * 255, 0, 255).astype(np.uint8)  # B
             colors[:, 3] = 255  # Alpha
         else:
-            # Attempt RGB coloring (inaccurate without calibration)
+            # Attempt RGB coloring (inaccurate without calibration due to ~25mm camera offset)
             # Subsample video frame to match
             video_subsampled = video_frame[::stride, ::stride]
             rgb_colors = video_subsampled[valid_mask]

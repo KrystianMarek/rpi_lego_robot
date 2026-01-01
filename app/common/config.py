@@ -80,9 +80,15 @@ class Config:
     # ==========================================================================
 
     # Raw depth range (11-bit sensor, 0-2047)
+    # Note: Raw values are DISPARITY (not distance) - see frame_processor.py
     DEPTH_MAX = 2047
-    DEPTH_MIN_VALID = _env_int('DEPTH_MIN_VALID', 300)   # Filter noise (too close)
-    DEPTH_MAX_VALID = _env_int('DEPTH_MAX_VALID', 1800)  # Filter noise (too far/invalid)
+    DEPTH_MIN_VALID = _env_int('DEPTH_MIN_VALID', 300)   # Raw: filter too close
+    DEPTH_MAX_VALID = _env_int('DEPTH_MAX_VALID', 1800)  # Raw: filter too far
+
+    # Metric depth range (after conversion from raw disparity)
+    # Used for filtering valid points in point cloud generation
+    DEPTH_MIN_METERS = _env_float('DEPTH_MIN_METERS', 0.4)   # 40cm (Kinect min)
+    DEPTH_MAX_METERS = _env_float('DEPTH_MAX_METERS', 4.0)   # 4m (practical max)
 
     # Display normalization
     DEPTH_DISPLAY_BITS = 10  # Clip to 10 bits before >> 2 to 8-bit
