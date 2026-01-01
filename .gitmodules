@@ -4,3 +4,9 @@
 [submodule "dependencies/BrickPi"]
 	path = dependencies/BrickPi
 	url = https://github.com/DexterInd/BrickPi.git
+[submodule "dependencies/ncsdk"]
+	path = dependencies/ncsdk
+	url = https://github.com/movidius/ncsdk.git
+[submodule "dependencies/ncappzoo"]
+	path = dependencies/ncappzoo
+	url = https://github.com/movidius/ncappzoo.git

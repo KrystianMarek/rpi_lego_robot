@@ -1,6 +1,17 @@
 *.iml
 *.pyc
+__pycache__/
 
 .idea
 .venv
 .local
+.env
+
+# Build artifacts
+tmp/
+build/
+*.so
+*.egg-info/
+
+# uv cache
+.uv/

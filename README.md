@@ -30,6 +30,21 @@ See [Hardware Documentation](doc/hardware.md) for wiring details.
 
 ## Quick Start
 
+### Client (PC/Mac/Linux)
+
+```bash
+# Clone and setup
+git clone https://github.com/your-repo/rpi_lego_robot.git
+cd rpi_lego_robot
+./scripts/setup-client.sh
+
+# Run the GUI
+source .venv/bin/activate
+python gui.py
+```
+
+Enter the robot's IP address and click **Connect**.
+
 ### Server (Raspberry Pi)
 
 1. Configure Raspberry Pi (add to `/boot/config.txt`):
@@ -41,9 +56,9 @@ See [Hardware Documentation](doc/hardware.md) for wiring details.
 
 2. Install dependencies:
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   ./install_dependencies.sh $(.venv/bin/python -c "import site; print(site.getsitepackages()[0])")
+   git clone https://github.com/your-repo/rpi_lego_robot.git
+   cd rpi_lego_robot
+   ./scripts/setup-server.sh
    ```
 
 3. Run the server:
@@ -52,22 +67,12 @@ See [Hardware Documentation](doc/hardware.md) for wiring details.
    python server.py
    ```
 
-### Client (PC)
+See [Raspberry Pi Setup Guide](doc/raspberry-pi-setup.md) for detailed instructions.
 
-1. Install client dependencies:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   pip install numpy pyzmq pyyaml netifaces opencv-python pyqt5
-   ```
+### Legacy Setup (Deprecated)
 
-2. Run the GUI:
-   ```bash
-   source .venv/bin/activate
-   python gui.py
-   ```
-
-3. Enter the robot's IP address and click **Connect**
+The old `install_dependencies.sh` script is still available but deprecated.
+Use the new `scripts/setup-*.sh` scripts which use [uv](https://github.com/astral-sh/uv) for faster, more reliable package management.
 
 ## Architecture
 
@@ -105,6 +110,9 @@ See [Architecture Documentation](doc/architecture.md) for detailed design.
 | [Hardware](doc/hardware.md) | Wiring, sensors, and configuration |
 | [Networking](doc/networking.md) | Protocol and packet formats |
 | [Project Structure](doc/development/project-structure.md) | Code organization |
+| [Raspberry Pi Setup](doc/raspberry-pi-setup.md) | OS setup, dependencies, troubleshooting |
+| [NCS Legacy Support](doc/ncs-legacy-support.md) | Intel Movidius Neural Compute Stick |
+| [Dependency Management](doc/development/todo-dependency-management.md) | Setup scripts and requirements |
 
 ## UI Development
 
@@ -116,24 +124,34 @@ pyuic5 app/client/gui/main_window.ui -o app/client/gui/main_window.py
 
 ## Dependencies
 
-### Python Packages
-- `numpy` - Array operations
-- `pyzmq` - ZeroMQ messaging
-- `pyyaml` - Configuration
-- `netifaces` - Network discovery
-- `opencv-python` - Image processing
-- `pyqt5` - GUI framework
-- `smbus2` - I²C (server only)
+### Requirements Structure
 
-### Native Libraries
-- **BrickPi** - LEGO motor/sensor interface (git submodule)
-- **libfreenect** - Kinect driver (git submodule)
+```
+requirements/
+├── base.txt    # Shared: numpy, pyzmq, PyYAML, netifaces
+├── client.txt  # Desktop GUI: PyQt5, pyqtgraph, opencv-python
+└── server.txt  # Raspberry Pi: smbus2, psutil
+```
+
+### Native Libraries (Git Submodules)
+
+| Submodule | Purpose |
+|-----------|---------|
+| `dependencies/BrickPi` | LEGO motor/sensor interface |
+| `dependencies/libfreenect` | Xbox Kinect driver |
+| `dependencies/ncsdk` | Intel NCS SDK (legacy) |
+| `dependencies/ncappzoo` | Pre-trained neural network models |
 
 Initialize submodules:
 ```bash
 git submodule init
 git submodule update
 ```
+
+### Intel NCS (Legacy Device)
+
+The Intel Movidius Neural Compute Stick is supported but considered legacy hardware.
+See [NCS Legacy Support](doc/ncs-legacy-support.md) for details.
 
 ## Resources
 

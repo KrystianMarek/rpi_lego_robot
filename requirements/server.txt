@@ -1,0 +1,25 @@
+# K.O.C Robot - Server (Raspberry Pi) Dependencies
+#
+# For Raspberry Pi running the robot server
+#
+# Install with: uv pip install -r requirements/server.txt
+# Or:           pip install -r requirements/server.txt
+#
+# NOTE: Native dependencies require separate installation:
+#   - BrickPi: pip install dependencies/BrickPi/Software/BrickPi_Python/
+#   - freenect: cmake build from dependencies/libfreenect/
+#   - mvnc (NCS): build from dependencies/ncsdk/
+#
+# See scripts/setup-server.sh for full installation
+
+-r base.txt
+
+# I2C communication (for sensors/BrickPi)
+smbus2>=0.4.0
+
+# System monitoring (CPU, RAM, network stats)
+psutil>=5.8.0
+
+# GPIO access (optional, for direct pin control)
+# RPi.GPIO>=0.7.0
+

@@ -1,0 +1,21 @@
+# K.O.C Robot - Client (Desktop GUI) Dependencies
+#
+# For Linux/macOS/Windows desktop running the control GUI
+#
+# Install with: uv pip install -r requirements/client.txt
+# Or:           pip install -r requirements/client.txt
+
+-r base.txt
+
+# Qt5 GUI framework
+PyQt5>=5.15.0
+
+# 3D Point cloud visualization
+pyqtgraph>=0.12.0
+
+# OpenGL backend for pyqtgraph
+PyOpenGL>=3.1.0
+
+# Computer vision (pre-built wheels)
+opencv-python>=4.0.0
+
