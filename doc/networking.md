@@ -40,7 +40,7 @@ class Packet:
     time: float      # Timestamp (time.time())
 ```
 
-### HelloClientPacket
+### HeartbeatRequest
 
 Sent by client during handshake.
 
@@ -49,9 +49,9 @@ Sent by client during handshake.
 | sequence | int | Packet sequence (starts at 1) |
 | network | dict | Client network interfaces (informational) |
 
-### HelloServerPacket
+### HeartbeatResponse
 
-Server response to hello.
+Server response to heartbeat request.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -147,8 +147,8 @@ sequenceDiagram
     participant Server
 
     Note over Client,Server: REQ → REP :5556
-    Client->>Server: HelloClientPacket(seq=1)
-    Server->>Client: HelloServerPacket(seq=2)<br/>{running: true}
+    Client->>Server: HeartbeatRequest(seq=1)
+    Server->>Client: HeartbeatResponse(seq=2)<br/>{running: true}
     Note over Server: Server starts BrickPi/Kinect
 ```
 

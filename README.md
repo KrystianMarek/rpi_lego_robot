@@ -124,14 +124,6 @@ See [Architecture Documentation](doc/architecture.md) for detailed design.
 | [NCS Legacy Support](doc/ncs-legacy-support.md) | Intel Movidius Neural Compute Stick |
 | [Dependency Management](doc/development/todo-dependency-management.md) | Setup scripts and requirements |
 
-## UI Development
-
-The GUI is built with Qt Designer. To regenerate after editing:
-
-```bash
-pyuic5 app/client/gui/main_window.ui -o app/client/gui/main_window.py
-```
-
 ## Dependencies
 
 ### Requirements Structure

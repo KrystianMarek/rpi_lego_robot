@@ -17,7 +17,7 @@ flowchart TB
 
         CC["CommandClient\nZMQ PUSH → robot:5560\nSends movement commands"]
         TC["TelemetryClient\nZMQ SUB → robot:5559\nReceives telemetry & Kinect data"]
-        HC["HelloClient\nZMQ REQ → robot:5556\nInitial handshake"]
+        HC["HeartbeatClient\nZMQ REQ → robot:5556\nInitial handshake"]
 
         GUI --> CC
         GUI --> TC
@@ -26,7 +26,7 @@ flowchart TB
 
     subgraph SERVER ["SERVER (Raspberry Pi 3 + BrickPi+)"]
         direction TB
-        HS["HelloServer\nZMQ REP :5556"]
+        HS["HandshakeServer\nZMQ REP :5556"]
         HS_DESC["Handshake\nTriggers BrickPi/Kinect startup"]
         HS --- HS_DESC
 
@@ -67,7 +67,7 @@ flowchart TB
 The system uses three ZeroMQ messaging patterns:
 
 ### REQ/REP (Request-Reply)
-- **Port 5556**: HelloServer ↔ HelloClient
+- **Port 5556**: HandshakeServer ↔ HeartbeatClient
 - Used for initial handshake
 - Triggers hardware startup on first client connection
 
@@ -88,7 +88,7 @@ The system uses three ZeroMQ messaging patterns:
 2. CommandReceiver starts immediately (no client dependency)
 3. Client GUI launches and enters robot IP
 4. Client connects to robot on all ports
-5. HelloClient triggers BrickPi and Kinect startup on first connection
+5. HeartbeatClient triggers BrickPi and Kinect startup on first connection
 6. Data flows begin
 
 ### Command Flow (Client → Server)
@@ -131,7 +131,7 @@ flowchart TB
 
 | Component | Type | Purpose |
 |-----------|------|---------|
-| HelloServer | Thread (daemon) | Connection handshake |
+| HandshakeServer | Thread (daemon) | Connection handshake |
 | CommandReceiver | Thread (daemon) | Receive commands from clients |
 | BrickPiWrapper | Thread (daemon) | Motor/sensor I/O |
 | KinectProcess | Process (daemon) | Camera capture (CPU-intensive) |
@@ -145,7 +145,7 @@ The Kinect runs in a separate **Process** rather than a Thread to avoid GIL cont
 
 | Port | Protocol | Direction | Purpose |
 |------|----------|-----------|---------|
-| 5556 | REQ/REP | Client → Robot | Hello/Handshake |
+| 5556 | REQ/REP | Client → Robot | Heartbeat/Handshake |
 | 5557 | PUSH/PULL | Internal | BrickPi → Aggregator |
 | 5558 | PUSH/PULL | Internal | Kinect → Aggregator |
 | 5559 | PUB/SUB | Robot → Clients | Telemetry broadcast |
