@@ -225,8 +225,8 @@ app/networking/
   - Lowercase folder name to match Python conventions
   - Update all imports across codebase
 
-- [ ] **4.2** Rename remaining PascalCase files to snake_case
-  - `BrickPiWrapper.py` → `brickpi_wrapper.py`
+- [x] **4.2** Rename remaining PascalCase files to snake_case
+  - `BrickPiWrapper.py` → `brick_pi_wrapper.py`
   - `CommandReceiver.py` → `command_receiver.py`
   - `KinectProcess.py` → `kinect_process.py`
   - `LoggingWrapper.py` → `logging_wrapper.py`
@@ -348,7 +348,9 @@ Key files that will need import updates:
 - `Networking/` → `networking/` (lowercase folder)
 - `Misc.py` → `serialization.py`
 - `LoggingWrapper.py` → `logging_wrapper.py`
-- Server files (BrickPiWrapper, etc.) kept as-is for compatibility
+- `BrickPiWrapper.py` → `brick_pi_wrapper.py`
+- `CommandReceiver.py` → `command_receiver.py`
+- `KinectProcess.py` → `kinect_process.py`
 
 #### Phase 5: Dead Code Cleanup ✅
 - Deleted `ControlPacket.py` (unused)
@@ -378,12 +380,18 @@ app/
 │   └── packets.py             # NEW (consolidated)
 │
 └── server/
-    └── handshake_server.py    # NEW (was HelloServer.py)
+    ├── brick_pi_wrapper.py    # NEW (was BrickPiWrapper.py)
+    ├── command_receiver.py    # NEW (was CommandReceiver.py)
+    ├── handshake_server.py    # NEW (was HelloServer.py)
+    └── kinect_process.py      # NEW (was KinectProcess.py)
 ```
 
 ### Files Deleted
 - `app/client/HelloClient.py`
 - `app/server/HelloServer.py`
+- `app/server/BrickPiWrapper.py`
+- `app/server/CommandReceiver.py`
+- `app/server/KinectProcess.py`
 - `app/networking/Packet.py`
 - `app/networking/HelloPacket.py`
 - `app/networking/CommandPacket.py`

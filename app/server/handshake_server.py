@@ -14,8 +14,8 @@ import zmq
 
 from app.networking import HeartbeatResponse, HeartbeatRequest, get_available_interfaces
 from app.common.serialization import compress, decompress
-from app.server.BrickPiWrapper import BrickPiWrapper
-from app.server.KinectProcess import KinectProcess
+from app.server.brick_pi_wrapper import BrickPiWrapper
+from app.server.kinect_process import KinectProcess
 
 
 class HandshakeServer(Thread):

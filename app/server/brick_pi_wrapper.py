@@ -220,3 +220,4 @@ class BrickPiWrapper(Thread):
         except Exception as e:
             self._logger.exception(e)
             return 0
+

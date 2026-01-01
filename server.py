@@ -12,10 +12,10 @@ import zmq
 
 from app.common.config import Config
 from app.common.logging_wrapper import setup_logging
-from app.server.BrickPiWrapper import BrickPiWrapper
-from app.server.CommandReceiver import CommandReceiver
+from app.server.brick_pi_wrapper import BrickPiWrapper
+from app.server.command_receiver import CommandReceiver
 from app.server.handshake_server import HandshakeServer
-from app.server.KinectProcess import KinectProcess
+from app.server.kinect_process import KinectProcess
 
 
 def telemetry_publisher(localhost, brick_pi_port, kinect_port, publisher_port):

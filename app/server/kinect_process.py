@@ -94,3 +94,4 @@ class KinectProcess(Process):
     def get_tilt_degs(self):
         #tilt_degs, _ = self._freenect.get_tilt_degs()
         return 0
+
