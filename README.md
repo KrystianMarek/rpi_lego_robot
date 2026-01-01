@@ -3,7 +3,7 @@
 A remote-controlled LEGO robot featuring caterpillar tracks, a rotating turret, and Xbox 360 Kinect vision — powered by Raspberry Pi 3 and BrickPi+.
 
 ![pic1](pictures/pic1.jpg "Robot Front View")
-![pic2](pictures/pic2.jpg "Robot Side View")
+![gui](pictures/gui.png "GUI client")
 
 [![YouTube Demo](https://img.youtube.com/vi/l-SW-rKROMY/0.jpg)](https://www.youtube.com/watch?v=l-SW-rKROMY)
 

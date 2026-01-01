@@ -11,10 +11,10 @@ from queue import Queue
 import zmq
 
 from app.common.config import Config
-from app.common.LoggingWrapper import setup_logging
+from app.common.logging_wrapper import setup_logging
 from app.server.BrickPiWrapper import BrickPiWrapper
 from app.server.CommandReceiver import CommandReceiver
-from app.server.HelloServer import HelloServer
+from app.server.handshake_server import HandshakeServer
 from app.server.KinectProcess import KinectProcess
 
 
@@ -73,7 +73,7 @@ def main():
     )
     kinect_process = KinectProcess(Config.LOCALHOST, Config.KINECT_PORT)
     command_receiver = CommandReceiver(command_queue, Config.COMMAND_PORT)
-    hello_server = HelloServer(
+    handshake_server = HandshakeServer(
         Config.HELLO_PORT,
         brick_pi_wrapper,
         kinect_process=kinect_process
@@ -83,8 +83,8 @@ def main():
     command_receiver.start()
     logger.info("Command receiver started on port {}".format(Config.COMMAND_PORT))
 
-    # Start hello server (manages BrickPi/Kinect startup on first client connect)
-    hello_server.start()
+    # Start handshake server (manages BrickPi/Kinect startup on first client connect)
+    handshake_server.start()
 
     # Run main telemetry publisher loop
     telemetry_publisher(

@@ -12,12 +12,12 @@ from threading import Thread
 import zmq
 
 from app.common.config import Config
-from app.common.Misc import decompress
-from app.Networking.CommandPacket import (
+from app.common.serialization import decompress
+from app.networking import (
     CommandPacket, GoForward, GoBackward, GoLeft, GoRight,
-    TurnLeft, TurnRight, TurretLeft, TurretRight, TurretReset
+    TurnLeft, TurnRight, TurretLeft, TurretRight, TurretReset,
+    TelemetryPacket, LegoMotor
 )
-from app.Networking.TelemetryPacket import TelemetryPacket, LegoMotor
 
 
 class CommandReceiver(Thread):

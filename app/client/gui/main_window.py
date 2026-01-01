@@ -1,409 +1,650 @@
 # -*- coding: utf-8 -*-
+"""
+Main Window UI for K.O.C Robot GUI Client.
 
-# Form implementation generated from reading ui file 'main_window.ui'
-#
-# Created by: PyQt5 UI code generator 5.11.3
-#
-# WARNING! All changes made in this file will be lost!
+This module was originally auto-generated from main_window.ui but has been
+manually refactored for:
+- Responsive layout (scales with window size)
+- QTabWidget for video streams and point cloud
+- Consolidated telemetry section
+- Cleaner, maintainable code structure
+
+The .ui file is now deprecated - all changes should be made here directly.
+"""
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QSizePolicy
+
 
 class Ui_MainWindow(object):
+    """Main window UI setup class."""
+
     def setupUi(self, MainWindow):
+        """Set up the main window UI with responsive layout."""
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1307, 944)
+        MainWindow.resize(1400, 900)
+        MainWindow.setMinimumSize(QtCore.QSize(1000, 700))
         MainWindow.setAutoFillBackground(True)
-        MainWindow.setStyleSheet("QLCDNumber { \n"
-"    color: red;\n"
-"    background-color: rgb(204, 219, 162);\n"
-"}")
+        MainWindow.setStyleSheet("""
+            QLCDNumber {
+                color: red;
+                background-color: rgb(204, 219, 162);
+            }
+            QLCDNumber[readoutType="system"] {
+                color: #333;
+                background-color: rgb(180, 200, 220);
+            }
+        """)
+
+        # Central widget with main vertical layout
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.widget = QtWidgets.QWidget(self.centralwidget)
-        self.widget.setGeometry(QtCore.QRect(10, 10, 1291, 481))
-        self.widget.setObjectName("widget")
-        self.kinect_group = QtWidgets.QHBoxLayout(self.widget)
-        self.kinect_group.setContentsMargins(0, 0, 0, 0)
-        self.kinect_group.setObjectName("kinect_group")
-        self.kinect_video_widget = QtWidgets.QWidget(self.widget)
-        self.kinect_video_widget.setObjectName("kinect_video_widget")
-        self.kinect_video = QtWidgets.QLabel(self.kinect_video_widget)
-        self.kinect_video.setGeometry(QtCore.QRect(0, 0, 640, 480))
-        self.kinect_video.setObjectName("kinect_video")
-        self.kinect_group.addWidget(self.kinect_video_widget)
-        self.kinect_depth_widget = QtWidgets.QWidget(self.widget)
-        self.kinect_depth_widget.setObjectName("kinect_depth_widget")
-        self.label_10 = QtWidgets.QLabel(self.kinect_depth_widget)
-        self.label_10.setGeometry(QtCore.QRect(0, 0, 640, 480))
-        self.label_10.setObjectName("label_10")
-        self.kinect_group.addWidget(self.kinect_depth_widget)
-        self.widget1 = QtWidgets.QWidget(self.centralwidget)
-        self.widget1.setGeometry(QtCore.QRect(10, 500, 1291, 391))
-        self.widget1.setObjectName("widget1")
-        self.controlls = QtWidgets.QHBoxLayout(self.widget1)
-        self.controlls.setContentsMargins(0, 0, 0, 0)
-        self.controlls.setObjectName("controlls")
-        self.locomotion_and_controls = QtWidgets.QHBoxLayout()
-        self.locomotion_and_controls.setObjectName("locomotion_and_controls")
-        self.locomotion = QtWidgets.QGroupBox(self.widget1)
-        self.locomotion.setObjectName("locomotion")
-        self.layoutWidget = QtWidgets.QWidget(self.locomotion)
-        self.layoutWidget.setGeometry(QtCore.QRect(10, 30, 291, 271))
-        self.layoutWidget.setObjectName("layoutWidget")
-        self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.layoutWidget)
-        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.verticalLayout_5 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.left_encoder_lcd = QtWidgets.QLCDNumber(self.layoutWidget)
-        self.left_encoder_lcd.setObjectName("left_encoder_lcd")
-        self.verticalLayout_5.addWidget(self.left_encoder_lcd)
-        self.label = QtWidgets.QLabel(self.layoutWidget)
-        self.label.setObjectName("label")
-        self.verticalLayout_5.addWidget(self.label)
-        self.horizontalLayout_3.addLayout(self.verticalLayout_5)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.horizontalLayout_3.addItem(spacerItem)
-        self.verticalLayout_4 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.right_encoder_lcd = QtWidgets.QLCDNumber(self.layoutWidget)
-        self.right_encoder_lcd.setObjectName("right_encoder_lcd")
-        self.verticalLayout_4.addWidget(self.right_encoder_lcd)
-        self.label_2 = QtWidgets.QLabel(self.layoutWidget)
-        self.label_2.setObjectName("label_2")
-        self.verticalLayout_4.addWidget(self.label_2)
-        self.horizontalLayout_3.addLayout(self.verticalLayout_4)
-        self.verticalLayout_6.addLayout(self.horizontalLayout_3)
-        self.line = QtWidgets.QFrame(self.layoutWidget)
-        self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line.setObjectName("line")
-        self.verticalLayout_6.addWidget(self.line)
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.verticalLayout_6.addItem(spacerItem1)
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setContentsMargins(-1, -1, -1, 10)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.gridLayout = QtWidgets.QGridLayout()
-        self.gridLayout.setObjectName("gridLayout")
-        self.left_full = QtWidgets.QPushButton(self.layoutWidget)
-        self.left_full.setMinimumSize(QtCore.QSize(50, 50))
-        self.left_full.setMaximumSize(QtCore.QSize(0, 0))
-        self.left_full.setText("")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("app/client/gui/images/left.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.left_full.setIcon(icon)
-        self.left_full.setIconSize(QtCore.QSize(45, 45))
-        self.left_full.setObjectName("left_full")
-        self.gridLayout.addWidget(self.left_full, 0, 0, 1, 1)
-        self.forward = QtWidgets.QPushButton(self.layoutWidget)
-        self.forward.setMinimumSize(QtCore.QSize(50, 50))
-        self.forward.setMaximumSize(QtCore.QSize(0, 0))
-        self.forward.setText("")
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("app/client/gui/images/up.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.forward.setIcon(icon1)
-        self.forward.setIconSize(QtCore.QSize(45, 45))
-        self.forward.setObjectName("forward")
-        self.gridLayout.addWidget(self.forward, 0, 1, 1, 1)
-        self.left = QtWidgets.QPushButton(self.layoutWidget)
-        self.left.setMinimumSize(QtCore.QSize(50, 50))
-        self.left.setMaximumSize(QtCore.QSize(0, 0))
-        self.left.setText("")
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("app/client/gui/images/round_left.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.left.setIcon(icon2)
-        self.left.setIconSize(QtCore.QSize(45, 45))
-        self.left.setObjectName("left")
-        self.gridLayout.addWidget(self.left, 1, 0, 1, 1)
-        self.backward = QtWidgets.QPushButton(self.layoutWidget)
-        self.backward.setMinimumSize(QtCore.QSize(50, 50))
-        self.backward.setMaximumSize(QtCore.QSize(0, 0))
-        self.backward.setText("")
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("app/client/gui/images/down.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.backward.setIcon(icon3)
-        self.backward.setIconSize(QtCore.QSize(45, 45))
-        self.backward.setObjectName("backward")
-        self.gridLayout.addWidget(self.backward, 1, 1, 1, 1)
-        self.right = QtWidgets.QPushButton(self.layoutWidget)
-        self.right.setMinimumSize(QtCore.QSize(50, 50))
-        self.right.setMaximumSize(QtCore.QSize(0, 0))
-        self.right.setText("")
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("app/client/gui/images/round_right.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.right.setIcon(icon4)
-        self.right.setIconSize(QtCore.QSize(45, 45))
-        self.right.setObjectName("right")
-        self.gridLayout.addWidget(self.right, 1, 2, 1, 1)
-        self.right_full = QtWidgets.QPushButton(self.layoutWidget)
-        self.right_full.setMinimumSize(QtCore.QSize(50, 50))
-        self.right_full.setMaximumSize(QtCore.QSize(0, 0))
-        self.right_full.setText("")
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("app/client/gui/images/right.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.right_full.setIcon(icon5)
-        self.right_full.setIconSize(QtCore.QSize(45, 45))
-        self.right_full.setObjectName("right_full")
-        self.gridLayout.addWidget(self.right_full, 0, 2, 1, 1)
-        self.horizontalLayout.addLayout(self.gridLayout)
-        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem2)
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.motor_speed_cld = QtWidgets.QLCDNumber(self.layoutWidget)
-        self.motor_speed_cld.setStyleSheet("background-color: rgb(114, 159, 207);")
-        self.motor_speed_cld.setProperty("intValue", 100)
-        self.motor_speed_cld.setObjectName("motor_speed_cld")
-        self.verticalLayout_2.addWidget(self.motor_speed_cld)
-        self.motor_speed = QtWidgets.QDial(self.layoutWidget)
-        self.motor_speed.setMaximum(255)
-        self.motor_speed.setProperty("value", 100)
-        self.motor_speed.setObjectName("motor_speed")
-        self.verticalLayout_2.addWidget(self.motor_speed)
-        self.horizontalLayout.addLayout(self.verticalLayout_2)
-        self.verticalLayout_6.addLayout(self.horizontalLayout)
-        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.verticalLayout_6.addItem(spacerItem3)
-        self.locomotion_and_controls.addWidget(self.locomotion)
-        self.turret_controls = QtWidgets.QGroupBox(self.widget1)
-        self.turret_controls.setObjectName("turret_controls")
-        self.layoutWidget1 = QtWidgets.QWidget(self.turret_controls)
-        self.layoutWidget1.setGeometry(QtCore.QRect(20, 30, 281, 356))
-        self.layoutWidget1.setObjectName("layoutWidget1")
-        self.verticalLayout_9 = QtWidgets.QVBoxLayout(self.layoutWidget1)
-        self.verticalLayout_9.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_9.setObjectName("verticalLayout_9")
-        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.verticalLayout_7 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_7.setObjectName("verticalLayout_7")
-        self.turret_encoder_lcd = QtWidgets.QLCDNumber(self.layoutWidget1)
-        self.turret_encoder_lcd.setObjectName("turret_encoder_lcd")
-        self.verticalLayout_7.addWidget(self.turret_encoder_lcd)
-        self.label_3 = QtWidgets.QLabel(self.layoutWidget1)
-        self.label_3.setObjectName("label_3")
-        self.verticalLayout_7.addWidget(self.label_3)
-        self.horizontalLayout_4.addLayout(self.verticalLayout_7)
-        spacerItem4 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.horizontalLayout_4.addItem(spacerItem4)
-        self.verticalLayout_8 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_8.setObjectName("verticalLayout_8")
-        self.color_sensor_lcd = QtWidgets.QLCDNumber(self.layoutWidget1)
-        self.color_sensor_lcd.setObjectName("color_sensor_lcd")
-        self.verticalLayout_8.addWidget(self.color_sensor_lcd)
-        self.label_4 = QtWidgets.QLabel(self.layoutWidget1)
-        self.label_4.setObjectName("label_4")
-        self.verticalLayout_8.addWidget(self.label_4)
-        self.horizontalLayout_4.addLayout(self.verticalLayout_8)
-        self.verticalLayout_9.addLayout(self.horizontalLayout_4)
-        self.line_2 = QtWidgets.QFrame(self.layoutWidget1)
-        self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_2.setObjectName("line_2")
-        self.verticalLayout_9.addWidget(self.line_2)
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.gridLayout_2 = QtWidgets.QGridLayout()
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.turret_left = QtWidgets.QPushButton(self.layoutWidget1)
-        self.turret_left.setMinimumSize(QtCore.QSize(50, 50))
-        self.turret_left.setMaximumSize(QtCore.QSize(0, 0))
-        self.turret_left.setText("")
-        self.turret_left.setIcon(icon2)
-        self.turret_left.setIconSize(QtCore.QSize(45, 45))
-        self.turret_left.setObjectName("turret_left")
-        self.gridLayout_2.addWidget(self.turret_left, 0, 0, 1, 1)
-        self.turret_right = QtWidgets.QPushButton(self.layoutWidget1)
-        self.turret_right.setMinimumSize(QtCore.QSize(50, 50))
-        self.turret_right.setMaximumSize(QtCore.QSize(0, 0))
-        self.turret_right.setText("")
-        self.turret_right.setIcon(icon4)
-        self.turret_right.setIconSize(QtCore.QSize(45, 45))
-        self.turret_right.setObjectName("turret_right")
-        self.gridLayout_2.addWidget(self.turret_right, 0, 1, 1, 1)
-        self.horizontalLayout_2.addLayout(self.gridLayout_2)
-        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem5)
-        self.verticalLayout_3 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.turret_speed_lcd = QtWidgets.QLCDNumber(self.layoutWidget1)
-        self.turret_speed_lcd.setStyleSheet("background-color: rgb(114, 159, 207);")
-        self.turret_speed_lcd.setProperty("intValue", 100)
-        self.turret_speed_lcd.setObjectName("turret_speed_lcd")
-        self.verticalLayout_3.addWidget(self.turret_speed_lcd)
-        self.turret_speed = QtWidgets.QDial(self.layoutWidget1)
-        self.turret_speed.setMaximum(250)
-        self.turret_speed.setProperty("value", 99)
-        self.turret_speed.setObjectName("turret_speed")
-        self.verticalLayout_3.addWidget(self.turret_speed)
-        self.horizontalLayout_2.addLayout(self.verticalLayout_3)
-        self.verticalLayout_9.addLayout(self.horizontalLayout_2)
-        self.line_3 = QtWidgets.QFrame(self.layoutWidget1)
-        self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_3.setObjectName("line_3")
-        self.verticalLayout_9.addWidget(self.line_3)
-        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.verticalLayout_11 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_11.setObjectName("verticalLayout_11")
-        self.turret_angle_lcd = QtWidgets.QLCDNumber(self.layoutWidget1)
-        self.turret_angle_lcd.setStyleSheet("background-color: rgb(114, 159, 207);")
-        self.turret_angle_lcd.setObjectName("turret_angle_lcd")
-        self.verticalLayout_11.addWidget(self.turret_angle_lcd)
-        self.label_5 = QtWidgets.QLabel(self.layoutWidget1)
-        self.label_5.setObjectName("label_5")
-        self.verticalLayout_11.addWidget(self.label_5)
-        self.horizontalLayout_6.addLayout(self.verticalLayout_11)
-        self.turret_angle = QtWidgets.QDial(self.layoutWidget1)
-        self.turret_angle.setMaximum(360)
-        self.turret_angle.setSliderPosition(180)
-        self.turret_angle.setObjectName("turret_angle")
-        self.horizontalLayout_6.addWidget(self.turret_angle)
-        self.verticalLayout_9.addLayout(self.horizontalLayout_6)
-        self.turret_reset = QtWidgets.QPushButton(self.layoutWidget1)
-        self.turret_reset.setObjectName("turret_reset")
-        self.verticalLayout_9.addWidget(self.turret_reset)
-        self.locomotion_and_controls.addWidget(self.turret_controls)
-        self.controlls.addLayout(self.locomotion_and_controls)
-        self.other_sensors_and_controlls = QtWidgets.QHBoxLayout()
-        self.other_sensors_and_controlls.setObjectName("other_sensors_and_controlls")
-        self.verticalLayout_15 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_15.setObjectName("verticalLayout_15")
-        self.video_options = QtWidgets.QGroupBox(self.widget1)
-        self.video_options.setObjectName("video_options")
-        self.layoutWidget2 = QtWidgets.QWidget(self.video_options)
-        self.layoutWidget2.setGeometry(QtCore.QRect(10, 240, 141, 121))
-        self.layoutWidget2.setObjectName("layoutWidget2")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.layoutWidget2)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.radioButton_video = QtWidgets.QRadioButton(self.layoutWidget2)
-        self.radioButton_video.setChecked(True)
-        self.radioButton_video.setObjectName("radioButton_video")
-        self.verticalLayout.addWidget(self.radioButton_video)
-        self.radioButton_depth = QtWidgets.QRadioButton(self.layoutWidget2)
-        self.radioButton_depth.setObjectName("radioButton_depth")
-        self.verticalLayout.addWidget(self.radioButton_depth)
-        self.radioButton_cloud_point = QtWidgets.QRadioButton(self.layoutWidget2)
-        self.radioButton_cloud_point.setObjectName("radioButton_cloud_point")
-        self.verticalLayout.addWidget(self.radioButton_cloud_point)
-        self.groupBox_3 = QtWidgets.QGroupBox(self.video_options)
-        self.groupBox_3.setGeometry(QtCore.QRect(120, 40, 181, 151))
-        self.groupBox_3.setObjectName("groupBox_3")
-        self.splitter = QtWidgets.QSplitter(self.groupBox_3)
-        self.splitter.setGeometry(QtCore.QRect(10, 50, 142, 50))
-        self.splitter.setOrientation(QtCore.Qt.Vertical)
-        self.splitter.setObjectName("splitter")
-        self.robot_ip_address = QtWidgets.QLineEdit(self.splitter)
-        self.robot_ip_address.setObjectName("robot_ip_address")
-        self.connect_to_robot = QtWidgets.QPushButton(self.splitter)
-        self.connect_to_robot.setObjectName("connect_to_robot")
-        self.label_8 = QtWidgets.QLabel(self.groupBox_3)
-        self.label_8.setGeometry(QtCore.QRect(10, 30, 91, 17))
-        self.label_8.setObjectName("label_8")
-        self.progressBar = QtWidgets.QProgressBar(self.groupBox_3)
-        self.progressBar.setGeometry(QtCore.QRect(10, 120, 141, 23))
-        self.progressBar.setProperty("value", 0)
-        self.progressBar.setObjectName("progressBar")
-        self.verticalLayout_15.addWidget(self.video_options)
-        self.other_sensors_and_controlls.addLayout(self.verticalLayout_15)
-        self.groupBox_2 = QtWidgets.QGroupBox(self.widget1)
-        self.groupBox_2.setObjectName("groupBox_2")
-        self.layoutWidget3 = QtWidgets.QWidget(self.groupBox_2)
-        self.layoutWidget3.setGeometry(QtCore.QRect(10, 30, 81, 131))
-        self.layoutWidget3.setObjectName("layoutWidget3")
-        self.verticalLayout_14 = QtWidgets.QVBoxLayout(self.layoutWidget3)
-        self.verticalLayout_14.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_14.setObjectName("verticalLayout_14")
-        self.verticalLayout_12 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_12.setObjectName("verticalLayout_12")
-        self.lcd_temperature = QtWidgets.QLCDNumber(self.layoutWidget3)
-        self.lcd_temperature.setObjectName("lcd_temperature")
-        self.verticalLayout_12.addWidget(self.lcd_temperature)
-        self.label_6 = QtWidgets.QLabel(self.layoutWidget3)
-        self.label_6.setObjectName("label_6")
-        self.verticalLayout_12.addWidget(self.label_6)
-        self.verticalLayout_14.addLayout(self.verticalLayout_12)
-        self.verticalLayout_13 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_13.setObjectName("verticalLayout_13")
-        self.lcd_voltage = QtWidgets.QLCDNumber(self.layoutWidget3)
-        self.lcd_voltage.setObjectName("lcd_voltage")
-        self.verticalLayout_13.addWidget(self.lcd_voltage)
-        self.label_7 = QtWidgets.QLabel(self.layoutWidget3)
-        self.label_7.setObjectName("label_7")
-        self.verticalLayout_13.addWidget(self.label_7)
-        self.verticalLayout_14.addLayout(self.verticalLayout_13)
-        self.widget2 = QtWidgets.QWidget(self.groupBox_2)
-        self.widget2.setGeometry(QtCore.QRect(10, 180, 131, 81))
-        self.widget2.setObjectName("widget2")
-        self.verticalLayout_16 = QtWidgets.QVBoxLayout(self.widget2)
-        self.verticalLayout_16.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_16.setObjectName("verticalLayout_16")
-        self.ultrasonic_sensor_lcd = QtWidgets.QLCDNumber(self.widget2)
-        self.ultrasonic_sensor_lcd.setObjectName("ultrasonic_sensor_lcd")
-        self.verticalLayout_16.addWidget(self.ultrasonic_sensor_lcd)
-        self.label_9 = QtWidgets.QLabel(self.widget2)
-        self.label_9.setObjectName("label_9")
-        self.verticalLayout_16.addWidget(self.label_9)
-        self.other_sensors_and_controlls.addWidget(self.groupBox_2)
-        self.controlls.addLayout(self.other_sensors_and_controlls)
+
+        self.main_layout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.main_layout.setContentsMargins(10, 10, 10, 10)
+        self.main_layout.setSpacing(10)
+        self.main_layout.setObjectName("main_layout")
+
+        # === VIDEO AREA (QTabWidget) ===
+        self._setup_video_tabs()
+
+        # === CONTROLS AREA ===
+        self._setup_controls_area()
+
+        # Set central widget
         MainWindow.setCentralWidget(self.centralwidget)
+
+        # Menu bar (minimal)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1307, 22))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
+        # Signal connections
+        self._setup_connections()
+
+        # Set text/translations
         self.retranslateUi(MainWindow)
-        self.motor_speed.valueChanged['int'].connect(self.motor_speed_cld.display)
-        self.turret_speed.valueChanged['int'].connect(self.turret_speed_lcd.display)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.kinect_video.setText(_translate("MainWindow", "video"))
-        self.label_10.setText(_translate("MainWindow", "depth"))
-        self.locomotion.setTitle(_translate("MainWindow", "locomotion"))
-        self.label.setText(_translate("MainWindow", "left encoder"))
-        self.label_2.setText(_translate("MainWindow", "right encoder"))
-        self.left_full.setToolTip(_translate("MainWindow", "q"))
-        self.left_full.setShortcut(_translate("MainWindow", "Q"))
-        self.forward.setStatusTip(_translate("MainWindow", "w"))
-        self.forward.setShortcut(_translate("MainWindow", "W"))
-        self.left.setToolTip(_translate("MainWindow", "a"))
-        self.left.setShortcut(_translate("MainWindow", "A"))
-        self.backward.setToolTip(_translate("MainWindow", "s"))
-        self.backward.setShortcut(_translate("MainWindow", "S"))
-        self.right.setToolTip(_translate("MainWindow", "d"))
-        self.right.setShortcut(_translate("MainWindow", "D"))
-        self.right_full.setToolTip(_translate("MainWindow", "e"))
-        self.right_full.setShortcut(_translate("MainWindow", "E"))
-        self.turret_controls.setTitle(_translate("MainWindow", "turret"))
-        self.label_3.setText(_translate("MainWindow", "turret encoder"))
-        self.label_4.setText(_translate("MainWindow", "color sensor"))
-        self.turret_left.setToolTip(_translate("MainWindow", "["))
-        self.turret_left.setShortcut(_translate("MainWindow", "["))
-        self.turret_right.setToolTip(_translate("MainWindow", "]"))
-        self.turret_right.setShortcut(_translate("MainWindow", "]"))
-        self.label_5.setText(_translate("MainWindow", "turret angle"))
-        self.turret_reset.setText(_translate("MainWindow", "turret reset"))
-        self.video_options.setTitle(_translate("MainWindow", "video options"))
-        self.radioButton_video.setText(_translate("MainWindow", "Video"))
-        self.radioButton_depth.setText(_translate("MainWindow", "Depth"))
-        self.radioButton_cloud_point.setText(_translate("MainWindow", "Cloud Point"))
-        self.groupBox_3.setTitle(_translate("MainWindow", "Connection"))
-        self.robot_ip_address.setText(_translate("MainWindow", "10.123.45.3"))
-        self.connect_to_robot.setText(_translate("MainWindow", "connect"))
-        self.label_8.setText(_translate("MainWindow", "Robot\'s IP"))
-        self.groupBox_2.setTitle(_translate("MainWindow", "sensors"))
-        self.label_6.setText(_translate("MainWindow", "temp"))
-        self.label_7.setText(_translate("MainWindow", "voltage"))
-        self.label_9.setText(_translate("MainWindow", "ultrasound"))
+    def _setup_video_tabs(self):
+        """Set up the tabbed video area with Streams and Point Cloud tabs."""
+        self.video_tab_widget = QtWidgets.QTabWidget(self.centralwidget)
+        self.video_tab_widget.setObjectName("video_tab_widget")
+        self.video_tab_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
+        # --- Tab 1: Streams (Video + Depth) ---
+        self.streams_tab = QtWidgets.QWidget()
+        self.streams_tab.setObjectName("streams_tab")
+        streams_layout = QtWidgets.QHBoxLayout(self.streams_tab)
+        streams_layout.setContentsMargins(5, 5, 5, 5)
+        streams_layout.setSpacing(10)
+
+        # Video stream label
+        self.kinect_video = QtWidgets.QLabel(self.streams_tab)
+        self.kinect_video.setObjectName("kinect_video")
+        self.kinect_video.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.kinect_video.setMinimumSize(QtCore.QSize(320, 240))
+        self.kinect_video.setAlignment(QtCore.Qt.AlignCenter)
+        self.kinect_video.setScaledContents(True)
+        self.kinect_video.setStyleSheet("background-color: #1a1a1a; color: #666;")
+        streams_layout.addWidget(self.kinect_video, stretch=1)
+
+        # Depth stream label
+        self.kinect_depth = QtWidgets.QLabel(self.streams_tab)
+        self.kinect_depth.setObjectName("kinect_depth")
+        self.kinect_depth.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.kinect_depth.setMinimumSize(QtCore.QSize(320, 240))
+        self.kinect_depth.setAlignment(QtCore.Qt.AlignCenter)
+        self.kinect_depth.setScaledContents(True)
+        self.kinect_depth.setStyleSheet("background-color: #1a1a1a; color: #666;")
+        streams_layout.addWidget(self.kinect_depth, stretch=1)
+
+        self.video_tab_widget.addTab(self.streams_tab, "")
+
+        # --- Tab 2: Point Cloud (placeholder - actual widget added in MainWindowWrapper) ---
+        self.pointcloud_tab = QtWidgets.QWidget()
+        self.pointcloud_tab.setObjectName("pointcloud_tab")
+        self.pointcloud_layout = QtWidgets.QVBoxLayout(self.pointcloud_tab)
+        self.pointcloud_layout.setContentsMargins(0, 0, 0, 0)
+        self.video_tab_widget.addTab(self.pointcloud_tab, "")
+
+        # Add tab widget to main layout with stretch factor 3 (takes 75% of space)
+        self.main_layout.addWidget(self.video_tab_widget, stretch=3)
+
+    def _setup_controls_area(self):
+        """Set up the controls area with 4 evenly distributed sections."""
+        self.controls_widget = QtWidgets.QWidget(self.centralwidget)
+        self.controls_widget.setObjectName("controls_widget")
+        self.controls_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        self.controls_layout = QtWidgets.QHBoxLayout(self.controls_widget)
+        self.controls_layout.setContentsMargins(0, 0, 0, 0)
+        self.controls_layout.setSpacing(10)
+        self.controls_layout.setObjectName("controls_layout")
+
+        # --- Section 1: Locomotion ---
+        self._setup_locomotion_section()
+
+        # --- Section 2: Turret ---
+        self._setup_turret_section()
+
+        # --- Section 3: Connection ---
+        self._setup_connection_section()
+
+        # --- Section 4: Telemetry ---
+        self._setup_telemetry_section()
+
+        # Add controls to main layout with stretch factor 1 (takes 25% of space)
+        self.main_layout.addWidget(self.controls_widget, stretch=1)
+
+    def _setup_locomotion_section(self):
+        """Set up the locomotion control section."""
+        self.locomotion = QtWidgets.QGroupBox(self.controls_widget)
+        self.locomotion.setObjectName("locomotion")
+        self.locomotion.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.locomotion.setMinimumWidth(280)
+
+        locomotion_layout = QtWidgets.QVBoxLayout(self.locomotion)
+        locomotion_layout.setContentsMargins(10, 25, 10, 10)
+        locomotion_layout.setSpacing(8)
+
+        # Encoder displays row
+        encoder_layout = QtWidgets.QHBoxLayout()
+
+        # Left encoder
+        left_encoder_layout = QtWidgets.QVBoxLayout()
+        self.left_encoder_lcd = QtWidgets.QLCDNumber(self.locomotion)
+        self.left_encoder_lcd.setObjectName("left_encoder_lcd")
+        self.left_encoder_lcd.setMinimumHeight(30)
+        left_encoder_layout.addWidget(self.left_encoder_lcd)
+        self.label_left_encoder = QtWidgets.QLabel(self.locomotion)
+        self.label_left_encoder.setObjectName("label_left_encoder")
+        left_encoder_layout.addWidget(self.label_left_encoder)
+        encoder_layout.addLayout(left_encoder_layout)
+
+        encoder_layout.addSpacing(20)
+
+        # Right encoder
+        right_encoder_layout = QtWidgets.QVBoxLayout()
+        self.right_encoder_lcd = QtWidgets.QLCDNumber(self.locomotion)
+        self.right_encoder_lcd.setObjectName("right_encoder_lcd")
+        self.right_encoder_lcd.setMinimumHeight(30)
+        right_encoder_layout.addWidget(self.right_encoder_lcd)
+        self.label_right_encoder = QtWidgets.QLabel(self.locomotion)
+        self.label_right_encoder.setObjectName("label_right_encoder")
+        right_encoder_layout.addWidget(self.label_right_encoder)
+        encoder_layout.addLayout(right_encoder_layout)
+
+        locomotion_layout.addLayout(encoder_layout)
+
+        # Separator line
+        line = QtWidgets.QFrame(self.locomotion)
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        locomotion_layout.addWidget(line)
+
+        # Movement controls row
+        movement_layout = QtWidgets.QHBoxLayout()
+
+        # Direction buttons grid
+        self._setup_direction_buttons(movement_layout)
+
+        movement_layout.addSpacing(10)
+
+        # Motor speed control
+        speed_layout = QtWidgets.QVBoxLayout()
+        self.motor_speed_lcd = QtWidgets.QLCDNumber(self.locomotion)
+        self.motor_speed_lcd.setObjectName("motor_speed_lcd")
+        self.motor_speed_lcd.setStyleSheet("background-color: rgb(114, 159, 207);")
+        self.motor_speed_lcd.setProperty("intValue", 100)
+        self.motor_speed_lcd.setMinimumHeight(30)
+        speed_layout.addWidget(self.motor_speed_lcd)
+
+        self.motor_speed = QtWidgets.QDial(self.locomotion)
+        self.motor_speed.setObjectName("motor_speed")
+        self.motor_speed.setMaximum(255)
+        self.motor_speed.setProperty("value", 100)
+        self.motor_speed.setMinimumSize(60, 60)
+        self.motor_speed.setMaximumSize(80, 80)
+        speed_layout.addWidget(self.motor_speed)
+
+        movement_layout.addLayout(speed_layout)
+        locomotion_layout.addLayout(movement_layout)
+
+        locomotion_layout.addStretch()
+        self.controls_layout.addWidget(self.locomotion, stretch=1)
+
+    def _setup_direction_buttons(self, parent_layout):
+        """Set up the direction control buttons in a grid."""
+        grid = QtWidgets.QGridLayout()
+        grid.setSpacing(2)
+
+        # Load icons
+        icon_left = QtGui.QIcon()
+        icon_left.addPixmap(QtGui.QPixmap("app/client/gui/images/left.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon_up = QtGui.QIcon()
+        icon_up.addPixmap(QtGui.QPixmap("app/client/gui/images/up.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon_down = QtGui.QIcon()
+        icon_down.addPixmap(QtGui.QPixmap("app/client/gui/images/down.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon_right = QtGui.QIcon()
+        icon_right.addPixmap(QtGui.QPixmap("app/client/gui/images/right.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon_round_left = QtGui.QIcon()
+        icon_round_left.addPixmap(QtGui.QPixmap("app/client/gui/images/round_left.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon_round_right = QtGui.QIcon()
+        icon_round_right.addPixmap(QtGui.QPixmap("app/client/gui/images/round_right.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+        btn_size = QtCore.QSize(50, 50)
+        icon_size = QtCore.QSize(45, 45)
+
+        # Row 0: left_full, forward, right_full
+        self.left_full = QtWidgets.QPushButton(self.locomotion)
+        self.left_full.setObjectName("left_full")
+        self.left_full.setMinimumSize(btn_size)
+        self.left_full.setIcon(icon_left)
+        self.left_full.setIconSize(icon_size)
+        grid.addWidget(self.left_full, 0, 0)
+
+        self.forward = QtWidgets.QPushButton(self.locomotion)
+        self.forward.setObjectName("forward")
+        self.forward.setMinimumSize(btn_size)
+        self.forward.setIcon(icon_up)
+        self.forward.setIconSize(icon_size)
+        grid.addWidget(self.forward, 0, 1)
+
+        self.right_full = QtWidgets.QPushButton(self.locomotion)
+        self.right_full.setObjectName("right_full")
+        self.right_full.setMinimumSize(btn_size)
+        self.right_full.setIcon(icon_right)
+        self.right_full.setIconSize(icon_size)
+        grid.addWidget(self.right_full, 0, 2)
+
+        # Row 1: left (turn), backward, right (turn)
+        self.left = QtWidgets.QPushButton(self.locomotion)
+        self.left.setObjectName("left")
+        self.left.setMinimumSize(btn_size)
+        self.left.setIcon(icon_round_left)
+        self.left.setIconSize(icon_size)
+        grid.addWidget(self.left, 1, 0)
+
+        self.backward = QtWidgets.QPushButton(self.locomotion)
+        self.backward.setObjectName("backward")
+        self.backward.setMinimumSize(btn_size)
+        self.backward.setIcon(icon_down)
+        self.backward.setIconSize(icon_size)
+        grid.addWidget(self.backward, 1, 1)
+
+        self.right = QtWidgets.QPushButton(self.locomotion)
+        self.right.setObjectName("right")
+        self.right.setMinimumSize(btn_size)
+        self.right.setIcon(icon_round_right)
+        self.right.setIconSize(icon_size)
+        grid.addWidget(self.right, 1, 2)
+
+        parent_layout.addLayout(grid)
+
+    def _setup_turret_section(self):
+        """Set up the turret control section."""
+        self.turret_controls = QtWidgets.QGroupBox(self.controls_widget)
+        self.turret_controls.setObjectName("turret_controls")
+        self.turret_controls.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.turret_controls.setMinimumWidth(260)
+
+        turret_layout = QtWidgets.QVBoxLayout(self.turret_controls)
+        turret_layout.setContentsMargins(10, 25, 10, 10)
+        turret_layout.setSpacing(8)
+
+        # Encoder and color sensor row
+        sensor_layout = QtWidgets.QHBoxLayout()
+
+        # Turret encoder
+        turret_enc_layout = QtWidgets.QVBoxLayout()
+        self.turret_encoder_lcd = QtWidgets.QLCDNumber(self.turret_controls)
+        self.turret_encoder_lcd.setObjectName("turret_encoder_lcd")
+        self.turret_encoder_lcd.setMinimumHeight(30)
+        turret_enc_layout.addWidget(self.turret_encoder_lcd)
+        self.label_turret_encoder = QtWidgets.QLabel(self.turret_controls)
+        self.label_turret_encoder.setObjectName("label_turret_encoder")
+        turret_enc_layout.addWidget(self.label_turret_encoder)
+        sensor_layout.addLayout(turret_enc_layout)
+
+        sensor_layout.addSpacing(20)
+
+        # Color sensor
+        color_layout = QtWidgets.QVBoxLayout()
+        self.color_sensor_lcd = QtWidgets.QLCDNumber(self.turret_controls)
+        self.color_sensor_lcd.setObjectName("color_sensor_lcd")
+        self.color_sensor_lcd.setMinimumHeight(30)
+        color_layout.addWidget(self.color_sensor_lcd)
+        self.label_color_sensor = QtWidgets.QLabel(self.turret_controls)
+        self.label_color_sensor.setObjectName("label_color_sensor")
+        color_layout.addWidget(self.label_color_sensor)
+        sensor_layout.addLayout(color_layout)
+
+        turret_layout.addLayout(sensor_layout)
+
+        # Separator
+        line = QtWidgets.QFrame(self.turret_controls)
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        turret_layout.addWidget(line)
+
+        # Turret controls row
+        controls_row = QtWidgets.QHBoxLayout()
+
+        # Turret direction buttons
+        icon_round_left = QtGui.QIcon()
+        icon_round_left.addPixmap(QtGui.QPixmap("app/client/gui/images/round_left.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon_round_right = QtGui.QIcon()
+        icon_round_right.addPixmap(QtGui.QPixmap("app/client/gui/images/round_right.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+        btn_size = QtCore.QSize(50, 50)
+        icon_size = QtCore.QSize(45, 45)
+
+        self.turret_left = QtWidgets.QPushButton(self.turret_controls)
+        self.turret_left.setObjectName("turret_left")
+        self.turret_left.setMinimumSize(btn_size)
+        self.turret_left.setIcon(icon_round_left)
+        self.turret_left.setIconSize(icon_size)
+        controls_row.addWidget(self.turret_left)
+
+        self.turret_right = QtWidgets.QPushButton(self.turret_controls)
+        self.turret_right.setObjectName("turret_right")
+        self.turret_right.setMinimumSize(btn_size)
+        self.turret_right.setIcon(icon_round_right)
+        self.turret_right.setIconSize(icon_size)
+        controls_row.addWidget(self.turret_right)
+
+        controls_row.addSpacing(10)
+
+        # Turret speed
+        speed_layout = QtWidgets.QVBoxLayout()
+        self.turret_speed_lcd = QtWidgets.QLCDNumber(self.turret_controls)
+        self.turret_speed_lcd.setObjectName("turret_speed_lcd")
+        self.turret_speed_lcd.setStyleSheet("background-color: rgb(114, 159, 207);")
+        self.turret_speed_lcd.setProperty("intValue", 100)
+        self.turret_speed_lcd.setMinimumHeight(30)
+        speed_layout.addWidget(self.turret_speed_lcd)
+
+        self.turret_speed = QtWidgets.QDial(self.turret_controls)
+        self.turret_speed.setObjectName("turret_speed")
+        self.turret_speed.setMaximum(250)
+        self.turret_speed.setProperty("value", 99)
+        self.turret_speed.setMinimumSize(60, 60)
+        self.turret_speed.setMaximumSize(80, 80)
+        speed_layout.addWidget(self.turret_speed)
+
+        controls_row.addLayout(speed_layout)
+        turret_layout.addLayout(controls_row)
+
+        # Separator
+        line2 = QtWidgets.QFrame(self.turret_controls)
+        line2.setFrameShape(QtWidgets.QFrame.HLine)
+        line2.setFrameShadow(QtWidgets.QFrame.Sunken)
+        turret_layout.addWidget(line2)
+
+        # Turret angle row
+        angle_layout = QtWidgets.QHBoxLayout()
+
+        angle_display = QtWidgets.QVBoxLayout()
+        self.turret_angle_lcd = QtWidgets.QLCDNumber(self.turret_controls)
+        self.turret_angle_lcd.setObjectName("turret_angle_lcd")
+        self.turret_angle_lcd.setStyleSheet("background-color: rgb(114, 159, 207);")
+        self.turret_angle_lcd.setMinimumHeight(30)
+        angle_display.addWidget(self.turret_angle_lcd)
+        self.label_turret_angle = QtWidgets.QLabel(self.turret_controls)
+        self.label_turret_angle.setObjectName("label_turret_angle")
+        angle_display.addWidget(self.label_turret_angle)
+        angle_layout.addLayout(angle_display)
+
+        self.turret_angle = QtWidgets.QDial(self.turret_controls)
+        self.turret_angle.setObjectName("turret_angle")
+        self.turret_angle.setMaximum(360)
+        self.turret_angle.setSliderPosition(180)
+        self.turret_angle.setMinimumSize(60, 60)
+        self.turret_angle.setMaximumSize(80, 80)
+        angle_layout.addWidget(self.turret_angle)
+
+        turret_layout.addLayout(angle_layout)
+
+        # Reset button
+        self.turret_reset = QtWidgets.QPushButton(self.turret_controls)
+        self.turret_reset.setObjectName("turret_reset")
+        turret_layout.addWidget(self.turret_reset)
+
+        turret_layout.addStretch()
+        self.controls_layout.addWidget(self.turret_controls, stretch=1)
+
+    def _setup_connection_section(self):
+        """Set up the connection control section."""
+        self.connection_group = QtWidgets.QGroupBox(self.controls_widget)
+        self.connection_group.setObjectName("connection_group")
+        self.connection_group.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.connection_group.setMinimumWidth(180)
+
+        conn_layout = QtWidgets.QVBoxLayout(self.connection_group)
+        conn_layout.setContentsMargins(10, 25, 10, 10)
+        conn_layout.setSpacing(10)
+
+        # Robot IP label
+        self.label_robot_ip = QtWidgets.QLabel(self.connection_group)
+        self.label_robot_ip.setObjectName("label_robot_ip")
+        conn_layout.addWidget(self.label_robot_ip)
+
+        # IP address input
+        self.robot_ip_address = QtWidgets.QLineEdit(self.connection_group)
+        self.robot_ip_address.setObjectName("robot_ip_address")
+        self.robot_ip_address.setMinimumHeight(28)
+        conn_layout.addWidget(self.robot_ip_address)
+
+        # Connect button
+        self.connect_to_robot = QtWidgets.QPushButton(self.connection_group)
+        self.connect_to_robot.setObjectName("connect_to_robot")
+        self.connect_to_robot.setMinimumHeight(32)
+        conn_layout.addWidget(self.connect_to_robot)
+
+        # Connection progress bar
+        self.progressBar = QtWidgets.QProgressBar(self.connection_group)
+        self.progressBar.setObjectName("progressBar")
+        self.progressBar.setProperty("value", 0)
+        self.progressBar.setTextVisible(False)
+        self.progressBar.setMaximumHeight(10)
+        conn_layout.addWidget(self.progressBar)
+
+        conn_layout.addStretch()
+        self.controls_layout.addWidget(self.connection_group, stretch=1)
+
+    def _setup_telemetry_section(self):
+        """Set up the telemetry section with all sensor and system data."""
+        self.telemetry_group = QtWidgets.QGroupBox(self.controls_widget)
+        self.telemetry_group.setObjectName("telemetry_group")
+        self.telemetry_group.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.telemetry_group.setMinimumWidth(280)
+
+        telemetry_layout = QtWidgets.QVBoxLayout(self.telemetry_group)
+        telemetry_layout.setContentsMargins(10, 25, 10, 10)
+        telemetry_layout.setSpacing(6)
+
+        # Grid layout for telemetry data (2 columns)
+        grid = QtWidgets.QGridLayout()
+        grid.setHorizontalSpacing(15)
+        grid.setVerticalSpacing(4)
+
+        row = 0
+
+        # --- System Stats ---
+        # CPU
+        self.lcd_cpu = QtWidgets.QLCDNumber(self.telemetry_group)
+        self.lcd_cpu.setObjectName("lcd_cpu")
+        self.lcd_cpu.setProperty("readoutType", "system")
+        self.lcd_cpu.setMinimumHeight(25)
+        self.lcd_cpu.setDigitCount(4)
+        grid.addWidget(self.lcd_cpu, row, 0)
+        self.label_cpu = QtWidgets.QLabel(self.telemetry_group)
+        self.label_cpu.setObjectName("label_cpu")
+        grid.addWidget(self.label_cpu, row, 1)
+
+        # RAM
+        self.lcd_ram = QtWidgets.QLCDNumber(self.telemetry_group)
+        self.lcd_ram.setObjectName("lcd_ram")
+        self.lcd_ram.setProperty("readoutType", "system")
+        self.lcd_ram.setMinimumHeight(25)
+        self.lcd_ram.setDigitCount(4)
+        grid.addWidget(self.lcd_ram, row, 2)
+        self.label_ram = QtWidgets.QLabel(self.telemetry_group)
+        self.label_ram.setObjectName("label_ram")
+        grid.addWidget(self.label_ram, row, 3)
+
+        row += 1
+
+        # WiFi
+        self.lcd_wifi = QtWidgets.QLCDNumber(self.telemetry_group)
+        self.lcd_wifi.setObjectName("lcd_wifi")
+        self.lcd_wifi.setProperty("readoutType", "system")
+        self.lcd_wifi.setMinimumHeight(25)
+        self.lcd_wifi.setDigitCount(5)
+        grid.addWidget(self.lcd_wifi, row, 0)
+        self.label_wifi = QtWidgets.QLabel(self.telemetry_group)
+        self.label_wifi.setObjectName("label_wifi")
+        grid.addWidget(self.label_wifi, row, 1)
+
+        row += 1
+
+        # --- Frame Rates ---
+        # Video FPS
+        self.lcd_video_fps = QtWidgets.QLCDNumber(self.telemetry_group)
+        self.lcd_video_fps.setObjectName("lcd_video_fps")
+        self.lcd_video_fps.setProperty("readoutType", "system")
+        self.lcd_video_fps.setMinimumHeight(25)
+        self.lcd_video_fps.setDigitCount(4)
+        grid.addWidget(self.lcd_video_fps, row, 0)
+        self.label_video_fps = QtWidgets.QLabel(self.telemetry_group)
+        self.label_video_fps.setObjectName("label_video_fps")
+        grid.addWidget(self.label_video_fps, row, 1)
+
+        # Depth FPS
+        self.lcd_depth_fps = QtWidgets.QLCDNumber(self.telemetry_group)
+        self.lcd_depth_fps.setObjectName("lcd_depth_fps")
+        self.lcd_depth_fps.setProperty("readoutType", "system")
+        self.lcd_depth_fps.setMinimumHeight(25)
+        self.lcd_depth_fps.setDigitCount(4)
+        grid.addWidget(self.lcd_depth_fps, row, 2)
+        self.label_depth_fps = QtWidgets.QLabel(self.telemetry_group)
+        self.label_depth_fps.setObjectName("label_depth_fps")
+        grid.addWidget(self.label_depth_fps, row, 3)
+
+        row += 1
+
+        # Separator
+        telemetry_layout.addLayout(grid)
+        line = QtWidgets.QFrame(self.telemetry_group)
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        telemetry_layout.addWidget(line)
+
+        # --- Sensors Grid ---
+        sensors_grid = QtWidgets.QGridLayout()
+        sensors_grid.setHorizontalSpacing(15)
+        sensors_grid.setVerticalSpacing(4)
+
+        row = 0
+
+        # Temperature
+        self.lcd_temperature = QtWidgets.QLCDNumber(self.telemetry_group)
+        self.lcd_temperature.setObjectName("lcd_temperature")
+        self.lcd_temperature.setMinimumHeight(25)
+        sensors_grid.addWidget(self.lcd_temperature, row, 0)
+        self.label_temperature = QtWidgets.QLabel(self.telemetry_group)
+        self.label_temperature.setObjectName("label_temperature")
+        sensors_grid.addWidget(self.label_temperature, row, 1)
+
+        # Voltage
+        self.lcd_voltage = QtWidgets.QLCDNumber(self.telemetry_group)
+        self.lcd_voltage.setObjectName("lcd_voltage")
+        self.lcd_voltage.setMinimumHeight(25)
+        sensors_grid.addWidget(self.lcd_voltage, row, 2)
+        self.label_voltage = QtWidgets.QLabel(self.telemetry_group)
+        self.label_voltage.setObjectName("label_voltage")
+        sensors_grid.addWidget(self.label_voltage, row, 3)
+
+        row += 1
+
+        # Ultrasound
+        self.ultrasonic_sensor_lcd = QtWidgets.QLCDNumber(self.telemetry_group)
+        self.ultrasonic_sensor_lcd.setObjectName("ultrasonic_sensor_lcd")
+        self.ultrasonic_sensor_lcd.setMinimumHeight(25)
+        sensors_grid.addWidget(self.ultrasonic_sensor_lcd, row, 0)
+        self.label_ultrasound = QtWidgets.QLabel(self.telemetry_group)
+        self.label_ultrasound.setObjectName("label_ultrasound")
+        sensors_grid.addWidget(self.label_ultrasound, row, 1)
+
+        telemetry_layout.addLayout(sensors_grid)
+        telemetry_layout.addStretch()
+
+        self.controls_layout.addWidget(self.telemetry_group, stretch=1)
+
+    def _setup_connections(self):
+        """Set up signal/slot connections."""
+        # Motor speed dial -> LCD display
+        self.motor_speed.valueChanged['int'].connect(self.motor_speed_lcd.display)
+        # Turret speed dial -> LCD display
+        self.turret_speed.valueChanged['int'].connect(self.turret_speed_lcd.display)
+
+    def retranslateUi(self, MainWindow):
+        """Set up text translations."""
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "K.O.C Robot Control"))
+
+        # Tab names
+        self.video_tab_widget.setTabText(0, _translate("MainWindow", "📹 Streams"))
+        self.video_tab_widget.setTabText(1, _translate("MainWindow", "🔲 Point Cloud"))
+
+        # Video labels
+        self.kinect_video.setText(_translate("MainWindow", "Video Stream"))
+        self.kinect_depth.setText(_translate("MainWindow", "Depth Stream"))
+
+        # Locomotion section
+        self.locomotion.setTitle(_translate("MainWindow", "Locomotion"))
+        self.label_left_encoder.setText(_translate("MainWindow", "Left Encoder"))
+        self.label_right_encoder.setText(_translate("MainWindow", "Right Encoder"))
+
+        # Button shortcuts
+        self.left_full.setToolTip(_translate("MainWindow", "Strafe Left (Q)"))
+        self.left_full.setShortcut(_translate("MainWindow", "Q"))
+        self.forward.setToolTip(_translate("MainWindow", "Forward (W)"))
+        self.forward.setShortcut(_translate("MainWindow", "W"))
+        self.right_full.setToolTip(_translate("MainWindow", "Strafe Right (E)"))
+        self.right_full.setShortcut(_translate("MainWindow", "E"))
+        self.left.setToolTip(_translate("MainWindow", "Turn Left (A)"))
+        self.left.setShortcut(_translate("MainWindow", "A"))
+        self.backward.setToolTip(_translate("MainWindow", "Backward (S)"))
+        self.backward.setShortcut(_translate("MainWindow", "S"))
+        self.right.setToolTip(_translate("MainWindow", "Turn Right (D)"))
+        self.right.setShortcut(_translate("MainWindow", "D"))
+
+        # Turret section
+        self.turret_controls.setTitle(_translate("MainWindow", "Turret"))
+        self.label_turret_encoder.setText(_translate("MainWindow", "Turret Encoder"))
+        self.label_color_sensor.setText(_translate("MainWindow", "Color Sensor"))
+        self.label_turret_angle.setText(_translate("MainWindow", "Turret Angle"))
+        self.turret_left.setToolTip(_translate("MainWindow", "Turret Left ([)"))
+        self.turret_left.setShortcut(_translate("MainWindow", "["))
+        self.turret_right.setToolTip(_translate("MainWindow", "Turret Right (])"))
+        self.turret_right.setShortcut(_translate("MainWindow", "]"))
+        self.turret_reset.setText(_translate("MainWindow", "Reset Turret"))
+
+        # Connection section
+        self.connection_group.setTitle(_translate("MainWindow", "Connection"))
+        self.label_robot_ip.setText(_translate("MainWindow", "Robot's IP"))
+        self.robot_ip_address.setText(_translate("MainWindow", "192.168.10.187"))
+        self.connect_to_robot.setText(_translate("MainWindow", "Connect"))
+
+        # Telemetry section
+        self.telemetry_group.setTitle(_translate("MainWindow", "Telemetry"))
+        self.label_cpu.setText(_translate("MainWindow", "CPU %"))
+        self.label_ram.setText(_translate("MainWindow", "RAM %"))
+        self.label_wifi.setText(_translate("MainWindow", "WiFi Mbps"))
+        self.label_video_fps.setText(_translate("MainWindow", "Video FPS"))
+        self.label_depth_fps.setText(_translate("MainWindow", "Depth FPS"))
+        self.label_temperature.setText(_translate("MainWindow", "Temp °C"))
+        self.label_voltage.setText(_translate("MainWindow", "Voltage V"))
+        self.label_ultrasound.setText(_translate("MainWindow", "Ultrasound"))

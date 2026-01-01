@@ -93,8 +93,9 @@ class ConnectionManager(QObject):
         self._set_state(ConnectionState.CONNECTING)
 
         try:
-            # Import here to avoid circular imports
-            from app.client.gui.MainWindowWrapper import TelemetryClient, CommandClient
+            # Import client classes
+            from app.client.telemetry_client import TelemetryClient
+            from app.client.command_client import CommandClient
 
             # Start telemetry client
             self._telemetry_client = TelemetryClient()

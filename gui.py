@@ -26,7 +26,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from app.client.gui.MainWindowWrapper import MainWindowWrapper
 from app.common.config import Config
-from app.common.LoggingWrapper import setup_logging
+from app.common.logging_wrapper import setup_logging
 
 
 def launch_gui():

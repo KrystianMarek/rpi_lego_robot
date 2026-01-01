@@ -5,8 +5,8 @@ from multiprocessing import Process
 
 import zmq
 
-from app.Networking.KinectPacket import KinectPacket
-from app.common.Misc import compress
+from app.networking import KinectPacket
+from app.common.serialization import compress
 
 
 class KinectProcess(Process):

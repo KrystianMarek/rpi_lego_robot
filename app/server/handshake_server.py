@@ -1,8 +1,10 @@
 """
-HelloServer - Handles client connection handshake.
+HandshakeServer - Handles client connection handshake.
 
 Manages the initial connection from clients and triggers startup of
 BrickPi and Kinect components on first client connection.
+
+Formerly named HelloServer.
 """
 import logging
 import time
@@ -10,13 +12,13 @@ from threading import Thread
 
 import zmq
 
-from app.Networking import HelloServerPacket, get_available_interfaces, HelloClientPacket
-from app.common.Misc import compress, decompress
+from app.networking import HeartbeatResponse, HeartbeatRequest, get_available_interfaces
+from app.common.serialization import compress, decompress
 from app.server.BrickPiWrapper import BrickPiWrapper
 from app.server.KinectProcess import KinectProcess
 
 
-class HelloServer(Thread):
+class HandshakeServer(Thread):
     """
     REQ/REP server for client handshake.
 
@@ -25,10 +27,11 @@ class HelloServer(Thread):
     """
 
     def __init__(
-            self, port,
+            self,
+            port: int,
             brick_pi_wrapper: BrickPiWrapper,
             kinect_process: KinectProcess,
-            sleep_time=1):
+            sleep_time: float = 1):
 
         Thread.__init__(self)
         self.daemon = True
@@ -47,27 +50,27 @@ class HelloServer(Thread):
         socket = context.socket(zmq.REP)
         address = "tcp://*:{}".format(self._port)
         socket.bind(address)
-        self._logger.info("Starting -> address: {}".format(address))
+        self._logger.info("HandshakeServer starting -> address: {}".format(address))
 
         while self._running:
             try:
-                response = decompress(socket.recv())
+                request = decompress(socket.recv())
 
-                if type(response) is HelloClientPacket:
+                if isinstance(request, HeartbeatRequest):
                     # Start hardware components on first client connection
                     if not self._components_started:
                         self._start_components()
                         self._components_started = True
 
                     # Send response with server info
-                    sequence = response.sequence + 1
-                    request = HelloServerPacket(
+                    sequence = request.sequence + 1
+                    response = HeartbeatResponse(
                         sequence,
                         running=True,
                         network=get_available_interfaces(),
                         sleep=self._sleep_time
                     )
-                    socket.send(compress(request))
+                    socket.send(compress(response))
 
                 time.sleep(self._sleep_time)
 
@@ -92,3 +95,8 @@ class HelloServer(Thread):
         if not self._kinect_process.is_alive():
             self._kinect_process.start()
             self._logger.info("KinectProcess started")
+
+
+# Backward compatibility alias
+HelloServer = HandshakeServer
+

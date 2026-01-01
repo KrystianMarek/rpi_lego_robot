@@ -10,8 +10,8 @@ import zmq
 from BrickPi import PORT_A, PORT_D, PORT_C, PORT_1, PORT_4, TYPE_SENSOR_LIGHT_ON, TYPE_SENSOR_ULTRASONIC_CONT, \
     BrickPiSetup, BrickPi, BrickPiSetupSensors, BrickPiUpdateValues
 
-from app.common.Misc import compress, decompress
-from app.Networking.TelemetryPacket import LegoMotor, LegoSensor, TelemetryPacket, SystemStats
+from app.common.serialization import compress, decompress
+from app.networking import LegoMotor, LegoSensor, TelemetryPacket, SystemStats
 
 COMMAND_QUEUE_GRACE = 3
 
